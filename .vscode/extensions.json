@@ -2,6 +2,7 @@
     "recommendations": [
         "scala-lang.scala",
         "aaronduino.chisel",
-        "scalameta.metals"
+        "scalameta.metals",
+        "ms-vscode-remote.remote-containers"
     ]
 }

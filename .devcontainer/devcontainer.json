@@ -5,11 +5,8 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	// "image": "mcr.microsoft.com/devcontainers/base:jammy",
 	"features": {
-		"ghcr.io/devcontainers/features/git-lfs:1": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {},
 		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {},
-		"ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {},
-		"ghcr.io/dhoeric/features/act:1": {},
 		"ghcr.io/mikaello/devcontainer-features/modern-shell-utils:1": {}
 	},
 	"build": {

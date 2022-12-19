@@ -8,21 +8,28 @@
 
 ### 前置条件
 
-请确保在开发系统上安装了 Visual Studio Code 和 Docker，并且在 Visual Studio Code 中安装了 Dev Containers 插件。
+请确保在开发系统上安装了 Visual Studio Code 和 Docker，并且在 Visual Studio Code 中安装了工作区推荐的所有插件。
 
-### 配置容器
+### 方法一：使用容器
 
 Visual Studio Code 会提醒识别到一个 Dev Container 配置，并询问是否要使用这个容器配置。如果是第一次使用这个容器，会自动进行容器的搭建，需要花一点时间。
 
 详细操作请参考：<https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-open-an-existing-folder-in-a-container>
 
+### 方法二：不使用容器
+
+*待补充*
+
 ### 安装 Chipyard（可选）
 
 在终端中运行项目目录下的脚本 `./chipyard-bootstrap.sh`，然后使用 `source chipyard-env` 激活环境。
 
-## 测试
+## 自动化任务
 
-在项目目录下运行 `sbt test`，若最终显示 `All tests passed.` 则说明模版项目可用。
+- `make test`：运行所有测试
+- `make verilog`：构建并生成 Verilog 模块
+
+其他自动化任务请参考 `Makefile` 和 <https://github.com/OpenXiangShan/chisel-playground>
 
 ## 贡献
 
