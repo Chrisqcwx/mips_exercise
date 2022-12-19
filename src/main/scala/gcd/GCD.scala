@@ -18,17 +18,22 @@ class GCD extends Module {
     val outputValid   = Output(Bool())
   })
 
-  val x  = Reg(UInt())
-  val y  = Reg(UInt())
+  val x = Reg(UInt())
+  val y = Reg(UInt())
 
-  when(x > y) { x := x - y }
-    .otherwise { y := y - x }
+  when(x > y) { x := x - y }.otherwise { y := y - x }
 
   when(io.loadingValues) {
     x := io.value1
     y := io.value2
   }
 
-  io.outputGCD := x
+  io.outputGCD   := x
   io.outputValid := y === 0.U
+}
+
+import chisel3.stage.ChiselStage
+
+object GCDDriver extends App {
+  (new ChiselStage).emitVerilog(new GCD, args)
 }
