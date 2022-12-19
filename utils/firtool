@@ -1,2 +1,6 @@
 #!/usr/bin/env bash
-firtool.elf.strip --disable-annotation-unknown $@
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    firtool_darwin --disable-annotation-unknown $@
+else
+    firtool.elf.strip --disable-annotation-unknown $@
+fi

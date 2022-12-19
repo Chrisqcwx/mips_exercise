@@ -9,4 +9,4 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt install -y python3-pip \
     && pip install --upgrade pip --index-url https://mirrors.sustech.edu.cn/pypi/simple \
     && pip config set global.index-url https://mirrors.sustech.edu.cn/pypi/simple \
-    && apt install -y build-essential bison texinfo iverilog gtkwave verilator scala
+    && apt install -y build-essential bison texinfo iverilog gtkwave verilator scala libzstd-dev clang lldb lld
