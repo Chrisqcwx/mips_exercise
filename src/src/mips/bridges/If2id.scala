@@ -19,4 +19,5 @@ class If2id extends Module {
     )
 
     io.output := bridgeReg
+    
 }
