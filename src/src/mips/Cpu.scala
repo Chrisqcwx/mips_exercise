@@ -25,6 +25,7 @@ class Cpu extends Module {
     val ex2mem = Module(new Ex2mem)
     val mem = Module(new Mem0)
     val mem2wb = Module(new Mem2wb)
+    val hilo = Module(new HiLoReg)
 
     // pc
 
@@ -62,22 +63,29 @@ class Cpu extends Module {
     // ex
 
     ex.io.idDecodePort := id2ex.io.output
+    ex.io.hiloRead := hilo.io.output
+    ex.io.hiloWrite_mem := mem.io.hiloWrite
+    ex.io.hiloWrite_wb := mem2wb.io.hiloWrite_wb
 
     
     // ex2mem
 
     ex2mem.io.in_regWritePort := ex.io.regWritePort
+    ex2mem.io.hiloWrite_ex := ex.io.hiloWrite
 
     
     // mem
 
     mem.io.in_regWritePort := ex2mem.io.out_regWritePort
-
+    mem.io.hiloWrite_ex := ex2mem.io.hiloWrite_mem
     
     // mem2wb
 
     mem2wb.io.in_regWritePort := mem.io.out_regWritePort
+    mem2wb.io.hiloWrite_mem := mem.io.hiloWrite
 
+    // hilo
+    hilo.io.write := mem2wb.io.hiloWrite_wb
     
     
     // test

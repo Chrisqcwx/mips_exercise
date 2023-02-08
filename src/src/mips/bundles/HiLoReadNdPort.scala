@@ -5,6 +5,6 @@ import chisel3.util._
 import mips.Spec
 
 class HiLoReadNdPort extends Bundle {
-    val hi = Input(UInt(Spec.Width.Reg.data.W))
-    val lo = Output(UInt(Spec.Width.Reg.data.W))
+    val hi = UInt(Spec.Width.Reg.data.W)
+    val lo = UInt(Spec.Width.Reg.data.W)
 }

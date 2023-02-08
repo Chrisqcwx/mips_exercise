@@ -60,6 +60,13 @@ package object mips {
                 def sra : UInt = "b000011".U(Spec.Width.inst.W)
                 def srav: UInt = "b000111".U(Spec.Width.inst.W)
 
+                def movz: UInt = "b001010".U(Spec.Width.inst.W)
+                def movn: UInt = "b001011".U(Spec.Width.inst.W)
+                def mfhi: UInt = "b010000".U(Spec.Width.inst.W)
+                def mthi: UInt = "b010001".U(Spec.Width.inst.W)
+                def mflo: UInt = "b010010".U(Spec.Width.inst.W)
+                def mtlo: UInt = "b010011".U(Spec.Width.inst.W)
+
                 def sync: UInt = "b001111".U(Spec.Width.inst.W)
                 def pref: UInt = "b110011".U(Spec.Width.inst.W)
                 def special_inst : UInt = "b000000".U(Spec.Width.inst.W)
@@ -86,12 +93,20 @@ package object mips {
                 def sra : UInt = "b00000011".U(Spec.Width.Alu.op.W)
                 def srav: UInt = "b00000111".U(Spec.Width.Alu.op.W)
 
+                def movz: UInt = "b00001010".U(Spec.Width.Alu.op.W)
+                def movn: UInt = "b00001011".U(Spec.Width.Alu.op.W)
+                def mfhi: UInt = "b00010000".U(Spec.Width.Alu.op.W)
+                def mthi: UInt = "b00010001".U(Spec.Width.Alu.op.W)
+                def mflo: UInt = "b00010010".U(Spec.Width.Alu.op.W)
+                def mtlo: UInt = "b00010011".U(Spec.Width.Alu.op.W)
+
                 def nop : UInt = "b00000000".U(Spec.Width.Alu.op.W)
             }
 
             object AluSel {
                 def logic: UInt = "b001".U(Spec.Width.Alu.sel.W)
                 def shift: UInt = "b010".U(Spec.Width.Alu.sel.W)
+                def move : UInt = "b011".U(Spec.Width.Alu.sel.W)
                 def nop  : UInt = "b000".U(Spec.Width.Alu.sel.W)
             }
         }

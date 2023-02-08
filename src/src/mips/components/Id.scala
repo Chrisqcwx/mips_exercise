@@ -143,6 +143,64 @@ class Id extends Module {
                             reg_1_en := false.B
                             reg_2_en := true.B
                         }
+                        is (Spec.Op.Inst.mfhi){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.mfhi
+                            alusel := Spec.Op.AluSel.move
+                            instValid := true.B
+                            reg_1_en := false.B
+                            reg_2_en := false.B
+                        }
+                        is (Spec.Op.Inst.mflo){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.mflo
+                            alusel := Spec.Op.AluSel.move
+                            instValid := true.B
+                            reg_1_en := false.B
+                            reg_2_en := false.B
+                        }
+                        is (Spec.Op.Inst.mthi){
+                            en_write := false.B
+                            aluop := Spec.Op.AluOp.mthi
+                            
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := false.B
+                        }
+                        is (Spec.Op.Inst.mtlo){
+                            en_write := false.B
+                            aluop := Spec.Op.AluOp.mtlo
+                            
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := false.B
+                        }
+                        is (Spec.Op.Inst.movn){
+                            // en_write := true.B
+                            when (io.decode.reg_2 === 0.U(Spec.Width.Reg.data.W)) {
+                                en_write := false.B
+                            }.otherwise{
+                                en_write := true.B
+                            }
+                            aluop := Spec.Op.AluOp.movn
+                            alusel := Spec.Op.AluSel.move
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.movz){
+                            // en_write := true.B
+                            when (io.decode.reg_2 === 0.U(Spec.Width.Reg.data.W)) {
+                                en_write := true.B
+                            }.otherwise{
+                                en_write := false.B
+                            }
+                            aluop := Spec.Op.AluOp.movn
+                            alusel := Spec.Op.AluSel.move
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
                     }
 
                 }
