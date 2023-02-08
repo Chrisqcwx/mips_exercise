@@ -6,7 +6,8 @@ object Elaborate extends App {
   val useMFC    = true // use MLIR-based firrtl compiler
   val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
 
-  def top = new GCD()
+  // def top = new DecoupledGcd(16)
+  def top = new Id()
 
   if (useMFC) {
     (new stage.ChiselStage)
