@@ -1,3 +1,5 @@
+package mips.bridges
+
 import chisel3._
 import chisel3.util._
 import mips.Spec
@@ -12,10 +14,12 @@ class Ex2mem extends Module {
         // hilo
         val hiloWrite_ex = Input(new HiLoWriteNdPort)
         val hiloWrite_mem = Output(new HiLoWriteNdPort)
+        // stall
+        val stallEx = Input(Bool())
+        val stallMem = Input(Bool())
     })
 
-    val bridgeReg_regWrite = RegNext(
-        io.in_regWritePort,
+    val bridgeReg_regWrite = RegInit(
         (new RegWriteNdPort).Lit(
             _.en -> false.B,
             _.addr -> Spec.Addr.nop,
@@ -23,10 +27,7 @@ class Ex2mem extends Module {
         )
     )
 
-    io.out_regWritePort := bridgeReg_regWrite
-
-    val bridgeReg_hilo = RegNext(
-        io.hiloWrite_ex,
+    val bridgeReg_hilo = RegInit(
         (new HiLoWriteNdPort).Lit(
             _.en -> false.B,
             _.hi -> Spec.zeroWord,
@@ -34,5 +35,22 @@ class Ex2mem extends Module {
         )
     )
 
+    when(io.stallEx === true.B && io.stallMem === false.B) {
+        bridgeReg_regWrite := (new RegWriteNdPort).Lit(
+            _.en -> false.B,
+            _.addr -> Spec.Addr.nop,
+            _.data -> Spec.zeroWord
+        )
+        bridgeReg_hilo := (new HiLoWriteNdPort).Lit(
+            _.en -> false.B,
+            _.hi -> Spec.zeroWord,
+            _.lo -> Spec.zeroWord
+        )
+    }.elsewhen(io.stallEx === false.B) {
+        bridgeReg_regWrite := io.in_regWritePort
+        bridgeReg_hilo := io.hiloWrite_ex
+    }
+
+    io.out_regWritePort := bridgeReg_regWrite
     io.hiloWrite_mem := bridgeReg_hilo
 }

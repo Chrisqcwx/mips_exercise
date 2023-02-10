@@ -3,6 +3,7 @@ import chiseltest._
 import chisel3.experimental.BundleLiterals._
 
 import utest._
+import mips._
 import mips.Spec
 
 /**
@@ -38,44 +39,57 @@ object GCDSpec extends ChiselUtestTester {
             println(s"data 2: 0x${(data2.peek().litValue.toString(16))}")
           }
           val insts = Seq(
-            "b00111100000000010000000000000000",
-"b00111100000000101111111111111111",
-"b00111100000000110000010100000101",
-"b00111100000001000000000000000000",
-"b00000000010000010010000000001010",
-"b00000000011000010010000000001011",
-"b00000000011000100010000000001011",
-"b00000000010000110010000000001010",
-"b00000000000000000000000000010001",
-"b00000000010000000000000000010001",
-"b00000000011000000000000000010001",
-"b00000000000000000010000000010000",
-"b00000000011000000000000000010011",
-"b00000000010000000000000000010011",
-"b00000000001000000000000000010011"
+"b00110100000000010000000000101111",
+"b00110100000000100000000000101111",
+"b00000000000000000000000001000000",
+"b00010000001000100000000000000100",
+"b00000000000000000000000001000000",
+"b00110100000000110000000000010001",
+"b00000000001000100010000000100101",
+"b00001000000000000000000000010100",
+"b00000000000000000000000001000000",
+"b00000000000000000000000001000000",
+"b00110100000000110000000000100010",
+"b00000000000000000000000001000000",
+"b00000000000000000000000001000000",
+"b00000000000000000000000001000000",
+"b00000000000000000000000001000000",
+"b00000000000000000000000001000000"
           )
+
+          var timestep :Int = 0
+          var canloop = true
           
-          for (timestep <- 1 to insts.length) {
+          while (canloop) {
             println(s"\n time step: ${timestep}\n")
             
             val addr = cpu.io.romReadPort.addr.peek().litValue
-            cpu.io.romReadPort.data.poke((insts(addr.toInt/4)).U(32.W))
-            // println(((insts(addr.toInt/4)).U(32.W))(31,26))
-            // println(Spec.Op.Inst.lui)
-            print_reg(debugPort.id_reg_data1, debugPort.id_reg_data2)
-            //print_rf(cpu.io.cpuDebugPort.regFileRegs, Seq(1,2,3,4))
-            cpu.clock.step(1)
+            val instIdx = addr.toInt/4
+            println(s"inst idx : ${instIdx}")
+            if (instIdx >= insts.length) {
+              canloop = false
+            }
+            else {
+              cpu.io.romReadPort.data.poke((insts(addr.toInt/4)).U(32.W))
+              // println(((insts(addr.toInt/4)).U(32.W))(31,26))
+              // println(Spec.Op.Inst.lui)
+              print_reg(debugPort.id_reg_data1, debugPort.id_reg_data2)
+              //print_rf(cpu.io.cpuDebugPort.regFileRegs, Seq(1,2,3,4))
+              cpu.clock.step(1)
+              timestep =  timestep + 1 
+            }
+            
           }
 
-          
-
-          for (timestep <- insts.length + 1 to insts.length + 5) {
+          var i = 0
+          for (i <- 1 to 5) {
             println(s"\n time step: ${timestep}\n")
             
-            cpu.io.romReadPort.data.poke(0.U(32.W))
+            cpu.io.romReadPort.data.poke(Spec.Op.Inst.ssnop)
             print_reg(debugPort.id_reg_data1, debugPort.id_reg_data2)
             //print_rf(dut.io.cpuDebugPort.regFileRegs, Seq(1,2,3,4))
             cpu.clock.step(1)
+            timestep =  timestep + 1 
           }
           print_rf(cpu.io.cpuDebugPort.regFileRegs, Seq(1,2,3,4))
       }

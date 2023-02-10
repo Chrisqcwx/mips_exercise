@@ -1,6 +1,8 @@
 import chisel3.stage._
 import circt.stage.{CIRCTTarget, CIRCTTargetAnnotation}
 import circt.stage
+import mips._
+import mips.components._
 
 object Elaborate extends App {
   val useMFC    = true // use MLIR-based firrtl compiler

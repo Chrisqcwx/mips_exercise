@@ -1,27 +1,40 @@
+package mips.components
+
 import chisel3._
 import chisel3.util._
 import mips.Spec
+import mips.bundles.BranchSetNdPort
 
 class Pc extends Module {
     val io = IO(new Bundle {
         val pc = Output(UInt(Spec.Width.Rom.addr.W))
         val ce = Output(Bool())
-        // val tmp = Output(UInt(11.W))
-    })
 
-    val pc = RegInit(Spec.zeroWord)
-    pc := pc + 4.U
-    io.pc := pc
+        val stall = Input(Bool())
+        // branch
+        val branchSet = Input(new BranchSetNdPort)
+    })
 
     val ce = RegInit(Spec.zeroWord)
     ce := true.B
     io.ce := ce
 
-    // val tmp1 = RegInit(3.U(2.W))
-    // when(io.pc =/= 0.U(Spec.Width.Rom.addr.W)){
-    //     tmp1 := 0.U(2.W)
-    // }
-    // val tmp2 = RegInit(5.U(3.W))
-    // io.tmp := Cat(tmp1, tmp2, tmp1)
+    val pc = RegInit(Spec.zeroWord)
+    when (ce === true.B && io.stall === false.B) {
+        pc := pc + 4.U(Spec.Width.Reg.data.W)
+    }
+
+    when (ce === false.B) {
+        pc := Spec.zeroWord
+    }.elsewhen (io.stall === false.B) {
+        when (io.branchSet.en === true.B) {
+            pc := io.branchSet.addr
+        }.otherwise {
+            pc := pc + 4.U
+        }
+    }
+
+
+    io.pc := pc
 
 }

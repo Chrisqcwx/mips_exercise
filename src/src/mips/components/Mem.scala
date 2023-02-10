@@ -1,10 +1,12 @@
+package mips.components
+
 import chisel3._
-import chisel3.util._
+// import chisel3.util._
 import mips.Spec
 import mips.bundles.{RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
-import chisel3.experimental.BundleLiterals._
+// import chisel3.experimental.BundleLiterals._
 
-class Mem0 extends Module {
+class Mem extends Module {
     val io = IO(new Bundle {
         // regfile
         val in_regWritePort = Input(new RegWriteNdPort)

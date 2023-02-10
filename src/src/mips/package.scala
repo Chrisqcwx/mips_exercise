@@ -16,6 +16,7 @@ package object mips {
 
         object Width{
             val inst = 6
+            val inst2 = 5
 
             object Alu {
                 val op = 8
@@ -67,6 +68,42 @@ package object mips {
                 def mflo: UInt = "b010010".U(Spec.Width.inst.W)
                 def mtlo: UInt = "b010011".U(Spec.Width.inst.W)
 
+                // R special
+                def add : UInt = "b100000".U(Spec.Width.inst.W)
+                def addu: UInt = "b100001".U(Spec.Width.inst.W)
+                def sub : UInt = "b100010".U(Spec.Width.inst.W)
+                def subu: UInt = "b100011".U(Spec.Width.inst.W)
+                def slt : UInt = "b101010".U(Spec.Width.inst.W)
+                def sltu: UInt = "b101011".U(Spec.Width.inst.W)
+                // I
+                def addi : UInt = "b001000".U(Spec.Width.inst.W)
+                def addiu: UInt = "b001001".U(Spec.Width.inst.W)
+                def slti : UInt = "b001010".U(Spec.Width.inst.W)
+                def sltiu: UInt = "b001011".U(Spec.Width.inst.W)
+                // R
+                def clz  : UInt = "b100000".U(Spec.Width.inst.W)
+                def clo  : UInt = "b100001".U(Spec.Width.inst.W)
+                // R
+                def mul  : UInt = "b000010".U(Spec.Width.inst.W)
+                def mult : UInt = "b011000".U(Spec.Width.inst.W)
+                def multu: UInt = "b011001".U(Spec.Width.inst.W)
+                // R
+                def jr   : UInt = "b001000".U(Spec.Width.inst.W)
+                def jalr : UInt = "b001001".U(Spec.Width.inst.W)
+                // J
+                def j    : UInt = "b000010".U(Spec.Width.inst.W)
+                def jal  : UInt = "b000011".U(Spec.Width.inst.W)
+                // I
+                def beq   : UInt = "b000100".U(Spec.Width.inst.W)
+                def bgtz  : UInt = "b000111".U(Spec.Width.inst.W)
+                def blez  : UInt = "b000110".U(Spec.Width.inst.W)
+                def bne   : UInt = "b000101".U(Spec.Width.inst.W)
+                def bgez  : UInt = "b00001".U(Spec.Width.inst2.W)
+                def bgezal: UInt = "b10001".U(Spec.Width.inst2.W)
+                def bltz  : UInt = "b00000".U(Spec.Width.inst2.W)
+                def bltzal: UInt = "b10000".U(Spec.Width.inst2.W)
+                
+
                 def sync: UInt = "b001111".U(Spec.Width.inst.W)
                 def pref: UInt = "b110011".U(Spec.Width.inst.W)
                 def special_inst : UInt = "b000000".U(Spec.Width.inst.W)
@@ -77,36 +114,71 @@ package object mips {
             }
             
             object AluOp {
-                def and : UInt = "b00100100".U(Spec.Width.Alu.op.W)
-                def or  : UInt = "b00100101".U(Spec.Width.Alu.op.W)
-                def xor : UInt = "b00100110".U(Spec.Width.Alu.op.W)
-                def nor : UInt = "b00100111".U(Spec.Width.Alu.op.W)
-                def andi: UInt = "b01011001".U(Spec.Width.Alu.op.W)
-                def ori : UInt = "b01011010".U(Spec.Width.Alu.op.W)
-                def xori: UInt = "b01011011".U(Spec.Width.Alu.op.W)
-                def lui : UInt = "b01011100".U(Spec.Width.Alu.op.W)
+                def and     : UInt = "b00100100".U(Spec.Width.Alu.op.W)
+                def or      : UInt = "b00100101".U(Spec.Width.Alu.op.W)
+                def xor     : UInt = "b00100110".U(Spec.Width.Alu.op.W)
+                def nor     : UInt = "b00100111".U(Spec.Width.Alu.op.W)
+                def andi    : UInt = "b01011001".U(Spec.Width.Alu.op.W)
+                def ori     : UInt = "b01011010".U(Spec.Width.Alu.op.W)
+                def xori    : UInt = "b01011011".U(Spec.Width.Alu.op.W)
+                def lui     : UInt = "b01011100".U(Spec.Width.Alu.op.W)
 
-                def sll : UInt = "b01111100".U(Spec.Width.Alu.op.W)
-                def sllv: UInt = "b00000100".U(Spec.Width.Alu.op.W)
-                def srl : UInt = "b00000010".U(Spec.Width.Alu.op.W)
-                def srlv: UInt = "b00000110".U(Spec.Width.Alu.op.W)
-                def sra : UInt = "b00000011".U(Spec.Width.Alu.op.W)
-                def srav: UInt = "b00000111".U(Spec.Width.Alu.op.W)
+                def sll     : UInt = "b01111100".U(Spec.Width.Alu.op.W)
+                def sllv    : UInt = "b00000100".U(Spec.Width.Alu.op.W)
+                def srl     : UInt = "b00000010".U(Spec.Width.Alu.op.W)
+                def srlv    : UInt = "b00000110".U(Spec.Width.Alu.op.W)
+                def sra     : UInt = "b00000011".U(Spec.Width.Alu.op.W)
+                def srav    : UInt = "b00000111".U(Spec.Width.Alu.op.W)
 
-                def movz: UInt = "b00001010".U(Spec.Width.Alu.op.W)
-                def movn: UInt = "b00001011".U(Spec.Width.Alu.op.W)
-                def mfhi: UInt = "b00010000".U(Spec.Width.Alu.op.W)
-                def mthi: UInt = "b00010001".U(Spec.Width.Alu.op.W)
-                def mflo: UInt = "b00010010".U(Spec.Width.Alu.op.W)
-                def mtlo: UInt = "b00010011".U(Spec.Width.Alu.op.W)
+                def movz    : UInt = "b00001010".U(Spec.Width.Alu.op.W)
+                def movn    : UInt = "b00001011".U(Spec.Width.Alu.op.W)
+                def mfhi    : UInt = "b00010000".U(Spec.Width.Alu.op.W)
+                def mthi    : UInt = "b00010001".U(Spec.Width.Alu.op.W)
+                def mflo    : UInt = "b00010010".U(Spec.Width.Alu.op.W)
+                def mtlo    : UInt = "b00010011".U(Spec.Width.Alu.op.W)
 
-                def nop : UInt = "b00000000".U(Spec.Width.Alu.op.W)
+                def add     : UInt = "b00100000".U(Spec.Width.Alu.op.W)
+                def addu    : UInt = "b00100001".U(Spec.Width.Alu.op.W)
+                def sub     : UInt = "b00100010".U(Spec.Width.Alu.op.W)
+                def subu    : UInt = "b00100011".U(Spec.Width.Alu.op.W)
+                def slt     : UInt = "b00101010".U(Spec.Width.Alu.op.W)
+                def sltu    : UInt = "b00101011".U(Spec.Width.Alu.op.W)
+                def addi    : UInt = "b01010101".U(Spec.Width.Alu.op.W)
+                def addiu   : UInt = "b01010110".U(Spec.Width.Alu.op.W)
+                def slti    : UInt = "b01010111".U(Spec.Width.Alu.op.W)
+                def sltiu   : UInt = "b01011000".U(Spec.Width.Alu.op.W)
+                def clz     : UInt = "b10110000".U(Spec.Width.Alu.op.W)
+                def clo     : UInt = "b10110001".U(Spec.Width.Alu.op.W)
+                def mul     : UInt = "b10101001".U(Spec.Width.Alu.op.W)
+                def mult    : UInt = "b00011000".U(Spec.Width.Alu.op.W)
+                def multu   : UInt = "b00011001".U(Spec.Width.Alu.op.W)
+
+                def j       : UInt = "b01001111".U(Spec.Width.Alu.op.W)
+                def jal     : UInt = "b01010000".U(Spec.Width.Alu.op.W)
+                def jalr    : UInt = "b00001001".U(Spec.Width.Alu.op.W)
+                def jr      : UInt = "b00001000".U(Spec.Width.Alu.op.W)
+
+                def beq     : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def bgez    : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def bgezal  : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def bgtz    : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def blez    : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def bltz    : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def bltzal  : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+                def bne     : UInt = "b01010001".U(Spec.Width.Alu.op.W)
+
+
+
+                def nop     : UInt = "b00000000".U(Spec.Width.Alu.op.W)
             }
 
             object AluSel {
-                def logic: UInt = "b001".U(Spec.Width.Alu.sel.W)
-                def shift: UInt = "b010".U(Spec.Width.Alu.sel.W)
-                def move : UInt = "b011".U(Spec.Width.Alu.sel.W)
+                def logic       : UInt = "b001".U(Spec.Width.Alu.sel.W)
+                def shift       : UInt = "b010".U(Spec.Width.Alu.sel.W)
+                def move        : UInt = "b011".U(Spec.Width.Alu.sel.W)
+                def arithmetic  : UInt = "b100".U(Spec.Width.Alu.sel.W)
+                def mul         : UInt = "b101".U(Spec.Width.Alu.sel.W)
+                def jumpBranch  : UInt = "b110".U(Spec.Width.Alu.sel.W)
                 def nop  : UInt = "b000".U(Spec.Width.Alu.sel.W)
             }
         }

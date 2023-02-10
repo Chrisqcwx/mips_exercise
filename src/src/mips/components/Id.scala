@@ -1,7 +1,10 @@
+package mips.components
+
 import chisel3._
 import chisel3.util._
 import mips.Spec
 import mips.bundles.{RfReadPort, IdInstNdPort, IdDecodeNdPort, RegWriteNdPort}
+import mips.bundles.{BranchSetNdPort, BranchValidNdPort}
 import chisel3.experimental.BundleLiterals._
 
 class Id extends Module {
@@ -16,6 +19,13 @@ class Id extends Module {
         val write_mem = Input(new RegWriteNdPort)
         // to ex
         val decode = Output(new IdDecodeNdPort)
+        // stall require
+        val stallReq = Output(Bool())
+        // branch
+        val branchSet = Output(new BranchSetNdPort)
+        val branchValid = Output(new BranchValidNdPort)
+        val nowDelay = Input(Bool())
+        val nextDelay = Output(Bool())
     })
 
     def op  = io.idInstPort.inst(31,26) // 指令码
@@ -71,14 +81,41 @@ class Id extends Module {
     io.decode.en_write := en_write
     io.decode.addr_write := addr_write
 
+    // branch
+
+    io.branchValid.inDelaySlot := io.nowDelay
+
+    def nextDelay = io.nextDelay
+    def branchSetEn = io.branchSet.en
+    def branchSetAddr = io.branchSet.addr
+    def branchValidAddr = io.branchValid.addr
+
+    nextDelay := false.B
+    branchSetEn := false.B
+    branchSetAddr := Spec.Addr.nop
+    branchValidAddr := Spec.Addr.nop
+
+    val pcAdd4 = Wire(UInt(Spec.Width.Rom.addr.W))
+    val pcAdd8 = Wire(UInt(Spec.Width.Rom.addr.W))
+    pcAdd4 := io.idInstPort.pc + 4.U
+    pcAdd8 := io.idInstPort.pc + 8.U
+    
+    val immSll2Signedext = Wire(UInt(Spec.Width.Reg.data.W))
+    immSll2Signedext := Cat(
+        Fill(14, io.idInstPort.inst(15)),
+        io.idInstPort.inst,
+        0.U(2.W)
+    )
+
     // decode
     
     switch (op) {
         is (Spec.Op.Inst.special_inst){
             switch (op2) {
-                is (0.U(5.W))
+                is (0.U(Spec.Width.inst2.W))
                 {
                     switch (op3) {
+                        
                         is (Spec.Op.Inst.or){
                             en_write := true.B
                             aluop := Spec.Op.AluOp.or
@@ -201,6 +238,97 @@ class Id extends Module {
                             reg_1_en := true.B
                             reg_2_en := true.B
                         }
+                        is (Spec.Op.Inst.slt){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.slt
+                            alusel := Spec.Op.AluSel.arithmetic
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.sltu){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.sltu
+                            alusel := Spec.Op.AluSel.arithmetic
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.add){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.add
+                            alusel := Spec.Op.AluSel.arithmetic
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.addu){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.addu
+                            alusel := Spec.Op.AluSel.arithmetic
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.sub){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.sub
+                            alusel := Spec.Op.AluSel.arithmetic
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.subu){
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.subu
+                            alusel := Spec.Op.AluSel.arithmetic
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.mult){
+                            en_write := false.B
+                            aluop := Spec.Op.AluOp.mult
+            
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.multu){
+                            en_write := false.B
+                            aluop := Spec.Op.AluOp.multu
+            
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := true.B
+                        }
+                        is (Spec.Op.Inst.jr) {
+                            en_write := false.B
+                            aluop := Spec.Op.AluOp.jr
+                            alusel := Spec.Op.AluSel.jumpBranch
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := false.B
+
+                            branchValidAddr := Spec.Addr.nop
+                            branchSetEn := true.B
+                            branchSetAddr := reg_1_o
+                            nextDelay := true.B
+                        }
+                        is (Spec.Op.Inst.jalr) {
+                            en_write := true.B
+                            aluop := Spec.Op.AluOp.jalr
+                            alusel := Spec.Op.AluSel.jumpBranch
+                            instValid := true.B
+                            reg_1_en := true.B
+                            reg_2_en := false.B
+                            addr_write := io.idInstPort.inst(15,11)
+
+                            branchValidAddr := pcAdd8
+                            branchSetEn := true.B
+                            branchSetAddr := reg_1_o
+                            nextDelay := true.B
+                        }
                     }
 
                 }
@@ -253,6 +381,237 @@ class Id extends Module {
             reg_1_en := false.B
             reg_2_en := false.B
             instValid := true.B
+        }
+        is (Spec.Op.Inst.slti) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.slt
+            alusel := Spec.Op.AluSel.arithmetic
+            reg_1_en := true.B
+            reg_2_en := false.B
+            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.sltiu) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.sltu
+            alusel := Spec.Op.AluSel.arithmetic
+            reg_1_en := true.B
+            reg_2_en := false.B
+            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.addi) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.addi
+            alusel := Spec.Op.AluSel.arithmetic
+            reg_1_en := true.B
+            reg_2_en := false.B
+            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.addiu) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.addiu
+            alusel := Spec.Op.AluSel.arithmetic
+            reg_1_en := true.B
+            reg_2_en := false.B
+            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.special2_inst) {
+            switch (op3) {
+                is (Spec.Op.Inst.clz) {
+                    en_write := true.B
+                    aluop := Spec.Op.AluOp.clz
+                    alusel := Spec.Op.AluSel.arithmetic
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := false.B
+                }
+                is (Spec.Op.Inst.clo) {
+                    en_write := true.B
+                    aluop := Spec.Op.AluOp.clo
+                    alusel := Spec.Op.AluSel.arithmetic
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := false.B
+                }
+                is (Spec.Op.Inst.mul) {
+                    en_write := true.B
+                    aluop := Spec.Op.AluOp.mul
+                    alusel := Spec.Op.AluSel.mul
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := true.B
+                }
+            }
+        }
+        is (Spec.Op.Inst.j) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.j
+            alusel := Spec.Op.AluSel.jumpBranch
+            instValid := true.B
+            reg_1_en := false.B
+            reg_2_en := false.B
+
+            branchValidAddr := Spec.Addr.nop
+            branchSetEn := true.B
+            branchSetAddr := Cat(
+                pcAdd4(31,28),
+                io.idInstPort.inst(25,0),
+                0.U(2.W)
+            )
+            nextDelay := true.B
+        }
+        is (Spec.Op.Inst.jal) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.jal
+            alusel := Spec.Op.AluSel.jumpBranch
+            instValid := true.B
+            reg_1_en := false.B
+            reg_2_en := false.B
+            addr_write := 31.U
+
+            branchValidAddr := pcAdd8
+            branchSetEn := true.B
+            branchSetAddr := Cat(
+                pcAdd4(31,28),
+                io.idInstPort.inst(25,0),
+                0.U(2.W)
+            )
+            nextDelay := true.B
+        }
+        is (Spec.Op.Inst.beq) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.beq
+            alusel := Spec.Op.AluSel.jumpBranch
+            instValid := true.B
+            reg_1_en := true.B
+            reg_2_en := true.B
+
+            when (reg_1_o === reg_2_o) {
+                branchSetEn := true.B
+                branchSetAddr := pcAdd4 + immSll2Signedext
+                nextDelay := true.B
+            }
+        }
+        is (Spec.Op.Inst.bgtz) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.bgtz
+            alusel := Spec.Op.AluSel.jumpBranch
+            instValid := true.B
+            reg_1_en := true.B
+            reg_2_en := false.B
+
+            when (
+                reg_1_o(31) === 0.U(1.W) &&
+                reg_1_o =/= Spec.zeroWord
+            ) {
+                branchSetEn := true.B
+                branchSetAddr := pcAdd4 + immSll2Signedext
+                nextDelay := true.B
+            }
+        }
+        is (Spec.Op.Inst.blez) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.blez
+            alusel := Spec.Op.AluSel.jumpBranch
+            instValid := true.B
+            reg_1_en := true.B
+            reg_2_en := false.B
+
+            when (
+                reg_1_o(31) === 1.U(1.W) ||
+                reg_1_o === Spec.zeroWord
+            ) {
+                branchSetEn := true.B
+                branchSetAddr := pcAdd4 + immSll2Signedext
+                nextDelay := true.B
+            }
+        }
+        is (Spec.Op.Inst.bne) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.bne
+            alusel := Spec.Op.AluSel.jumpBranch
+            instValid := true.B
+            reg_1_en := true.B
+            reg_2_en := true.B
+
+            when (reg_1_o =/= reg_2_o) {
+                branchSetEn := true.B
+                branchSetAddr := pcAdd4 + immSll2Signedext
+                nextDelay := true.B
+            }
+        }
+        is (Spec.Op.Inst.regimm_inst) {
+            switch (op4) {
+                is (Spec.Op.Inst.bgez) {
+                    en_write := false.B
+                    aluop := Spec.Op.AluOp.bgez
+                    alusel := Spec.Op.AluSel.jumpBranch
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := false.B
+
+                    when (reg_1_o(31) === 0.U(1.W)) {
+                        branchSetEn := true.B
+                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        nextDelay := true.B
+                    }
+                }
+                is (Spec.Op.Inst.bgezal) {
+                    en_write := true.B
+                    aluop := Spec.Op.AluOp.bgezal
+                    alusel := Spec.Op.AluSel.jumpBranch
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := false.B
+
+                    addr_write := 31.U
+                    branchValidAddr := pcAdd8
+
+                    when (reg_1_o(31) === 0.U(1.W)) {
+                        branchSetEn := true.B
+                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        nextDelay := true.B
+                    }
+                }
+                is (Spec.Op.Inst.bltz) {
+                    en_write := false.B
+                    aluop := Spec.Op.AluOp.bltz
+                    alusel := Spec.Op.AluSel.jumpBranch
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := false.B
+
+                    when (reg_1_o(31) === 1.U(1.W)) {
+                        branchSetEn := true.B
+                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        nextDelay := true.B
+                    }
+                }
+                is (Spec.Op.Inst.bltzal) {
+                    en_write := true.B
+                    aluop := Spec.Op.AluOp.bltzal
+                    alusel := Spec.Op.AluSel.jumpBranch
+                    instValid := true.B
+                    reg_1_en := true.B
+                    reg_2_en := false.B
+
+                    addr_write := 31.U
+                    branchValidAddr := pcAdd8
+
+                    when (reg_1_o(31) === 1.U(1.W)) {
+                        branchSetEn := true.B
+                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        nextDelay := true.B
+                    }
+                }
+            }
         }
     }
 
@@ -314,5 +673,8 @@ class Id extends Module {
 
     deal_operator(reg_1_en, reg_1_data, reg_1_addr, reg_1_o)
     deal_operator(reg_2_en, reg_2_data, reg_2_addr, reg_2_o)
+
+    // stall
+    io.stallReq := false.B
 
 }
