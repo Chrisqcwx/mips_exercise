@@ -103,7 +103,7 @@ class Id extends Module {
     val immSll2Signedext = Wire(UInt(Spec.Width.Reg.data.W))
     immSll2Signedext := Cat(
         Fill(14, io.idInstPort.inst(15)),
-        io.idInstPort.inst,
+        io.idInstPort.inst(15,0),
         0.U(2.W)
     )
 
