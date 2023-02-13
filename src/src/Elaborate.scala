@@ -9,7 +9,8 @@ object Elaborate extends App {
   val generator = Seq(chisel3.stage.ChiselGeneratorAnnotation(() => top))
 
   // def top = new DecoupledGcd(16)
-  def top = new Cpu()
+  val debug = false
+  def top = new Cpu(debug=debug)
 
   if (useMFC) {
     (new stage.ChiselStage)

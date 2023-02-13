@@ -10,6 +10,9 @@ class Id2ex extends Module {
     val io = IO(new Bundle {
         val input = Input(new IdDecodeNdPort)
         val output = Output( new IdDecodeNdPort)
+        // inst
+        val instId = Input(UInt(Spec.Width.Rom.data.W))
+        val instEx = Output(UInt(Spec.Width.Rom.data.W))
         // stall
         val stallId = Input(Bool())
         val stallEx = Input(Bool())
@@ -40,6 +43,8 @@ class Id2ex extends Module {
 
     val bridgeRegDelay = RegInit(false.B)
 
+    io.instEx := Spec.zeroWord
+
     when(io.stallId === true.B && io.stallEx === false.B) {
         bridgeRegIdDecode := (new IdDecodeNdPort).Lit(
             _.aluop -> Spec.Op.AluOp.nop,
@@ -53,13 +58,20 @@ class Id2ex extends Module {
             _.inDelaySlot -> false.B,
             _.addr -> Spec.Addr.nop
         )
+
+        io.instEx := Spec.zeroWord
+
     }.elsewhen(io.stallId === false.B) {
         bridgeRegIdDecode := io.input
         bridegRegBranchValid := io.inBranchValid
         bridgeRegDelay := io.nextDelay
+
+        io.instEx := io.instId
     }
 
     io.output := bridgeRegIdDecode
     io.nowDelay := bridgeRegDelay
     io.outBranchValid := bridegRegBranchValid
+
+    
 }

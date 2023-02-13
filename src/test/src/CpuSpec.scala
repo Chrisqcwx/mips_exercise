@@ -17,12 +17,12 @@ import mips.Spec
   * sbt 'testOnly gcd.GcdDecoupledTester'
   * }}}
   */
-object GCDSpec extends ChiselUtestTester {
+object CpuSpec extends ChiselUtestTester {
   val tests = Tests {
     test("Cpu") {
-      testCircuit(new Cpu(), Seq(WriteVcdAnnotation)) {
+      testCircuit(new Cpu(debug=true), Seq(WriteVcdAnnotation)) {
         cpu =>
-          def debugPort = cpu.io.cpuDebugPort
+          def debugPort = cpu.io.cpuDebugPort.get
 
           def print_rf[T <: Bits](data : Vec[T], printIdx: Seq[Int]): Unit = {
             
@@ -91,7 +91,7 @@ object GCDSpec extends ChiselUtestTester {
             cpu.clock.step(1)
             timestep =  timestep + 1 
           }
-          print_rf(cpu.io.cpuDebugPort.regFileRegs, Seq(1,2,3,4))
+          print_rf(debugPort.regFileRegs, Seq(1,2,3,4))
       }
     }
   }

@@ -10,6 +10,8 @@ class Ex extends Module {
     val io = IO(new Bundle {
         // from id
         val idDecodePort = Input(new IdDecodeNdPort)
+        val inst = Input(UInt(Spec.Width.Rom.data.W))
+
         // from hilo
         val hiloRead = Input(new HiLoReadNdPort)
         // from mem
@@ -24,6 +26,8 @@ class Ex extends Module {
         val stallReq = Output(Bool())
         // branch
         val branchValid = Input(new BranchValidNdPort)
+        // mem load / save
+        val memLS = Output(new MemLSNdPort)
     })
 
     // result
@@ -317,5 +321,11 @@ class Ex extends Module {
     // stall
     io.stallReq := false.B
 
+    // mem
+    def inst = io.inst
+
+    io.memLS.aluop := aluop
+    io.memLS.addr := reg_1_data + Cat(Fill(16,inst(15)), inst(15,0))
+    io.memLS.data := reg_2_data
 
 }

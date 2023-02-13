@@ -10,12 +10,12 @@ import mips.bridges._
 
 // import chisel3.experimental.BundleLiterals._
 
-class Cpu extends Module {
+class Cpu(debug: Boolean = false) extends Module {
     val io = IO(new Bundle {
         val romReadPort = Flipped(new RomReadPort)
 
         // debug
-        val cpuDebugPort = Output(new CpuDebugPort)
+        val cpuDebugPort = if(debug) Some(Output(new CpuDebugPort)) else None
     })
 
     // io.tmp := false.B
@@ -120,8 +120,11 @@ class Cpu extends Module {
     // io.tmp := regfile.io.write.en
     
     // debug
-    io.cpuDebugPort.regFileRegs := regfile.io.regFileRegs
-    io.cpuDebugPort.id_reg_data1 := id.io.decode.reg_1
-    io.cpuDebugPort.id_reg_data2 := id.io.decode.reg_2
-    io.cpuDebugPort.rf_write := mem2wb.io.out_regWritePort
+
+    if (debug) {
+        io.cpuDebugPort.get.regFileRegs := regfile.io.regFileRegs
+        io.cpuDebugPort.get.id_reg_data1 := id.io.decode.reg_1
+        io.cpuDebugPort.get.id_reg_data2 := id.io.decode.reg_2
+        io.cpuDebugPort.get.rf_write := mem2wb.io.out_regWritePort
+    }
 }

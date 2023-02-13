@@ -10,6 +10,7 @@ import chisel3.experimental.BundleLiterals._
 class Id extends Module {
     val io = IO(new Bundle {
         val idInstPort = Input(new IdInstNdPort)
+        val inst = Output(UInt(Spec.Width.Rom.data.W))
         // to regfile
         val read_1 = Flipped(new RfReadPort)
         val read_2 = Flipped(new RfReadPort)
@@ -613,6 +614,109 @@ class Id extends Module {
                 }
             }
         }
+        is (Spec.Op.Inst.lb) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lb
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := false.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.lbu) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lbu
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := false.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.lh) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lh
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := false.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.lhu) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lhu
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := false.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.lw) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lw
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := false.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.lwl) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lwl
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.lwr) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.lwr
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.sb) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.sb
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.sh) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.sh
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.sw) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.sw
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.swl) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.swl
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.swr) {
+            en_write := false.B
+            aluop := Spec.Op.AluOp.swr
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            instValid := true.B
+        }
     }
 
     imm_final := imm
@@ -673,6 +777,9 @@ class Id extends Module {
 
     deal_operator(reg_1_en, reg_1_data, reg_1_addr, reg_1_o)
     deal_operator(reg_2_en, reg_2_data, reg_2_addr, reg_2_o)
+
+    // inst
+    io.inst := io.idInstPort.inst
 
     // stall
     io.stallReq := false.B

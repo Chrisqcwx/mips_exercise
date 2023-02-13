@@ -17,6 +17,9 @@ class Ex2mem extends Module {
         // stall
         val stallEx = Input(Bool())
         val stallMem = Input(Bool())
+        // mem load sava
+        val memLSEx = Input(new MemLSNdPort)
+        val memLSMem = Output(new MemLSNdPort)
     })
 
     val bridgeReg_regWrite = RegInit(
@@ -35,6 +38,14 @@ class Ex2mem extends Module {
         )
     )
 
+    val bridgeReg_memLS = RegInit(
+        (new MemLSNdPort).Lit(
+            _.aluop -> Spec.Op.AluOp.nop,
+            _.hi -> Spec.zeroWord,
+            _.lo -> Spec.zeroWord
+        )
+    )
+
     when(io.stallEx === true.B && io.stallMem === false.B) {
         bridgeReg_regWrite := (new RegWriteNdPort).Lit(
             _.en -> false.B,
@@ -46,11 +57,18 @@ class Ex2mem extends Module {
             _.hi -> Spec.zeroWord,
             _.lo -> Spec.zeroWord
         )
+        bridgeReg_memLS := (new MemLSNdPort).Lit(
+            _.aluop -> Spec.Op.AluOp.nop,
+            _.hi -> Spec.zeroWord,
+            _.lo -> Spec.zeroWord
+        )
     }.elsewhen(io.stallEx === false.B) {
         bridgeReg_regWrite := io.in_regWritePort
         bridgeReg_hilo := io.hiloWrite_ex
+        bridgeReg_memLS := io.memLSEx
     }
 
     io.out_regWritePort := bridgeReg_regWrite
     io.hiloWrite_mem := bridgeReg_hilo
+    io.memLSMem := bridgeReg_memLS
 }
