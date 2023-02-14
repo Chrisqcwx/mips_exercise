@@ -5,6 +5,7 @@ import chisel3.util._
 import mips.Spec
 import mips.bundles.{IdDecodeNdPort, RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
 import mips.bundles.{BranchValidNdPort}
+import mips.bundles.{MemLSNdPort}
 
 class Ex extends Module {
     val io = IO(new Bundle {

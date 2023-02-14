@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 import mips.Spec
 import mips.bundles.{RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
+import mips.bundles.{MemLSNdPort}
 import chisel3.experimental.BundleLiterals._
 
 class Ex2mem extends Module {
@@ -41,8 +42,8 @@ class Ex2mem extends Module {
     val bridgeReg_memLS = RegInit(
         (new MemLSNdPort).Lit(
             _.aluop -> Spec.Op.AluOp.nop,
-            _.hi -> Spec.zeroWord,
-            _.lo -> Spec.zeroWord
+            _.addr -> Spec.Addr.nop,
+            _.data -> Spec.zeroWord
         )
     )
 
@@ -59,8 +60,8 @@ class Ex2mem extends Module {
         )
         bridgeReg_memLS := (new MemLSNdPort).Lit(
             _.aluop -> Spec.Op.AluOp.nop,
-            _.hi -> Spec.zeroWord,
-            _.lo -> Spec.zeroWord
+            _.addr -> Spec.Addr.nop,
+            _.data -> Spec.zeroWord
         )
     }.elsewhen(io.stallEx === false.B) {
         bridgeReg_regWrite := io.in_regWritePort

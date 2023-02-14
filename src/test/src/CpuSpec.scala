@@ -1,4 +1,5 @@
 import chisel3._
+import chisel3.util._
 import chiseltest._
 import chisel3.experimental.BundleLiterals._
 
@@ -92,6 +93,7 @@ object CpuSpec extends ChiselUtestTester {
             timestep =  timestep + 1 
           }
           print_rf(debugPort.regFileRegs, Seq(1,2,3,4))
+
       }
     }
   }

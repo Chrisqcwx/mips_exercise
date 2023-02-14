@@ -13,6 +13,7 @@ import mips.bridges._
 class Cpu(debug: Boolean = false) extends Module {
     val io = IO(new Bundle {
         val romReadPort = Flipped(new RomReadPort)
+        val ramRWPort = Flipped(new RamRWPort)
 
         // debug
         val cpuDebugPort = if(debug) Some(Output(new CpuDebugPort)) else None
@@ -77,6 +78,7 @@ class Cpu(debug: Boolean = false) extends Module {
     id2ex.io.stallEx := ctrl.io.stallEx
     id2ex.io.nextDelay := id.io.nextDelay
     id2ex.io.inBranchValid := id.io.branchValid
+    id2ex.io.instId := id.io.inst
 
     
     // ex
@@ -86,7 +88,7 @@ class Cpu(debug: Boolean = false) extends Module {
     ex.io.hiloWrite_mem := mem.io.hiloWrite
     ex.io.hiloWrite_wb := mem2wb.io.hiloWrite_wb
     ex.io.branchValid := id2ex.io.outBranchValid
-
+    ex.io.inst := id2ex.io.instEx
     
     // ex2mem
 
@@ -94,12 +96,21 @@ class Cpu(debug: Boolean = false) extends Module {
     ex2mem.io.hiloWrite_ex := ex.io.hiloWrite
     ex2mem.io.stallEx := ctrl.io.stallEx
     ex2mem.io.stallMem := ctrl.io.stallMem
+    ex2mem.io.memLSEx := ex.io.memLS
 
     
     // mem
 
     mem.io.in_regWritePort := ex2mem.io.out_regWritePort
     mem.io.hiloWrite_ex := ex2mem.io.hiloWrite_mem
+    mem.io.memLS := ex2mem.io.memLSMem
+    mem.io.ramRW.dataRead := io.ramRWPort.dataRead
+
+    io.ramRWPort.en := mem.io.ramRW.en
+    io.ramRWPort.enWrite := mem.io.ramRW.enWrite
+    io.ramRWPort.sel := mem.io.ramRW.sel
+    io.ramRWPort.addr := mem.io.ramRW.addr
+    io.ramRWPort.dataWrite := mem.io.ramRW.dataWrite
     
     // mem2wb
 

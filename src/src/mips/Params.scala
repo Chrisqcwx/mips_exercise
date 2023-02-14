@@ -24,6 +24,13 @@ package object mips {
             }
 
             object Rom {
+                
+                val addr = Params.wordLength
+                val data = Params.wordLength
+            }
+
+            object Ram {
+                val sel  = 4
                 val addr = Params.wordLength
                 val data = Params.wordLength
             }
@@ -41,6 +48,11 @@ package object mips {
 
         object Addr {
             val nop = 0.U(Width.Reg.addr.W)
+        }
+
+        object RamFlag {
+            val write = true.B
+            val read = false.B
         }
 
         object Op {
