@@ -7,9 +7,7 @@ import mips.bundles.RamRWPort
 import mips.{Params, Spec}
 
 class Ram extends Module {
-    val io = IO(new Bundle {
-        val ramPort = new RamRWPort
-    })
+    val io = IO(new RamRWPort)
 
     val memory = RegInit(VecInit(
         Seq.fill(Params.ramMemNum)(0.U(Params.wordLength.W))
@@ -17,12 +15,12 @@ class Ram extends Module {
 
     RegInit(VecInit(Seq.fill(Spec.Num.reg)(0.U(Spec.Width.Reg.data.W))))
 
-    def en = io.ramPort.en
-    def enWrite = io.ramPort.enWrite
-    def dataRead = io.ramPort.dataRead
-    def dataWrite = io.ramPort.dataWrite
-    def addr = io.ramPort.addr
-    def sel = io.ramPort.sel
+    def en = io.en
+    def enWrite = io.enWrite
+    def dataRead = io.dataRead
+    def dataWrite = io.dataWrite
+    def addr = io.addr
+    def sel = io.sel
 
     // write
     val regIndex = addr(Params.ramMemNumLog2+1,2)
