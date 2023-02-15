@@ -6,8 +6,8 @@ package object mips {
         final val wordLength = 32
         final val regReadNum = 2
         final val romInstNum = 1024
-        final val ramMemNum = 131071
-        final val ramMemNumLog2 = 17
+        final val ramMemNum = 4096 // 131071
+        final val ramMemNumLog2 = 12
     }
 
     object Spec{

@@ -15,14 +15,13 @@ class Pc extends Module {
         val branchSet = Input(new BranchSetNdPort)
     })
 
-    val ce = RegInit(Spec.zeroWord)
-    ce := true.B
+    val ce = RegInit(true.B)
     io.ce := ce
 
     val pc = RegInit(Spec.zeroWord)
-    when (ce === true.B && io.stall === false.B) {
-        pc := pc + 4.U(Spec.Width.Reg.data.W)
-    }
+    // when (ce === true.B && io.stall === false.B) {
+    //     pc := pc + 4.U(Spec.Width.Reg.data.W)
+    // }
 
     when (ce === false.B) {
         pc := Spec.zeroWord
