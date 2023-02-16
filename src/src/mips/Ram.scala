@@ -35,8 +35,6 @@ class Ram extends Module {
                 wire := memory(regIndex)((idx+1)*8-1, 8*idx)
             }
             wire
-            //byte
-            //byte
         }
         memory(regIndex) := Cat(Seq.range(3,-1,-1).map { idx =>
             getByte(idx)
