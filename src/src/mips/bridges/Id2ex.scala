@@ -42,8 +42,7 @@ class Id2ex extends Module {
     )
 
     val bridgeRegDelay = RegInit(false.B)
-
-    io.instEx := Spec.zeroWord
+    val bridgeRegInst = RegInit(Spec.zeroWord)
 
     when(io.stallId === true.B && io.stallEx === false.B) {
         bridgeRegIdDecode := (new IdDecodeNdPort).Lit(
@@ -59,19 +58,19 @@ class Id2ex extends Module {
             _.addr -> Spec.Addr.nop
         )
 
-        io.instEx := Spec.zeroWord
+        bridgeRegInst := Spec.zeroWord
 
     }.elsewhen(io.stallId === false.B) {
         bridgeRegIdDecode := io.input
         bridegRegBranchValid := io.inBranchValid
         bridgeRegDelay := io.nextDelay
 
-        io.instEx := io.instId
+        bridgeRegInst := io.instId
     }
 
     io.output := bridgeRegIdDecode
     io.nowDelay := bridgeRegDelay
     io.outBranchValid := bridegRegBranchValid
-
+    io.instEx := bridgeRegInst
     
 }

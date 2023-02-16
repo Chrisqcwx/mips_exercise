@@ -38,10 +38,12 @@ object SopcSpec extends ChiselUtestTester {
             }
             else {
                 i = i + 1
-                println(i)
+                // println(i)
             }
             sopc.clock.step(1)
           }
+
+          sopc.clock.step(5)
         //   println((3.U).toString(2))
 
       }
