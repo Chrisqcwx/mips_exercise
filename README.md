@@ -20,8 +20,8 @@ jr, jalr, j, jal
 分支指令：
 beq, bgtz, blez, bne, bgez, bgezal, bltz, bltzal
 
-加载指令
+加载指令：
 lb, lbu, lh, lhu, ll, lw, lwl, lwr
 
-存储指令
+存储指令：
 sb, sc, sh, sw, swl, swr
