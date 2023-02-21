@@ -19,4 +19,3 @@ object Elaborate extends App {
     (new ChiselStage).execute(args, generator)
   }
 }
-
