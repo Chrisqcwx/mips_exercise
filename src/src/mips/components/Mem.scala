@@ -5,7 +5,8 @@ import chisel3.util._
 import mips.Spec
 import mips.bundles.{RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
 import mips.bundles.{MemLSNdPort,RamRWPort}
-// import chisel3.experimental.BundleLiterals._
+import mips.bundles.{LLbitWriteNdPort}
+import chisel3.experimental.BundleLiterals._
 
 class Mem extends Module {
     val io = IO(new Bundle {
@@ -19,6 +20,10 @@ class Mem extends Module {
 
         val memLS = Input(new MemLSNdPort)
         val ramRW = Flipped(new RamRWPort)
+        // llbit
+        val inLLbit = Input(Bool())
+        val inLLbitWrite = Input(new LLbitWriteNdPort)
+        val outLLbitWrite = Output(new LLbitWriteNdPort)
     })
 
     def in_en = io.in_regWritePort.en
@@ -61,6 +66,21 @@ class Mem extends Module {
     ramSel := "b1111".U(Spec.Width.Ram.sel.W)
     ramEn := false.B
     ramWrite := Spec.zeroWord
+
+    // llbit
+
+    val llbit = Wire(Bool())
+    when (io.inLLbitWrite.en === true.B) {
+        llbit := io.inLLbitWrite.value
+    }.otherwise {
+        llbit := io.inLLbit
+    }
+
+    io.outLLbitWrite := (new LLbitWriteNdPort).Lit(
+        _.en -> false.B,
+        _.value -> false.B
+    )
+    
 
     def fillSInt(data: UInt, fillLength: Int): UInt = {
         Cat(Fill(fillLength,data(data.getWidth-1)),data)
@@ -155,6 +175,19 @@ class Mem extends Module {
             ramEn := true.B
             ramSel := "b1111".U(Spec.Width.Ram.sel.W)
             out_data := ramRead
+        }
+        is (Spec.Op.AluOp.ll) {
+            ramAddr := writeAddr
+            ramEnWrite := false.B
+            ramEn := true.B
+            ramSel := "b1111".U(Spec.Width.Ram.sel.W)
+            out_data := ramRead
+            // set llbit
+            io.outLLbitWrite := (new LLbitWriteNdPort).Lit(
+                _.en -> true.B,
+                _.value -> true.B
+            )
+
         }
         is (Spec.Op.AluOp.lwl) {
             ramAddr := Cat(writeAddr(31,2),"b00".U(2.W))
@@ -284,6 +317,23 @@ class Mem extends Module {
                     ramWrite := writeData
                     ramSel := "b1111".U(Spec.Width.Ram.sel.W)
                 }
+            }
+        }
+        is (Spec.Op.AluOp.sc) {
+            when (llbit === true.B) {
+                ramAddr := writeAddr
+                ramEnWrite := true.B
+                ramEn := true.B
+                ramWrite := writeData
+                ramSel := "b1111".U(Spec.Width.Ram.sel.W)
+                out_data := 1.U(Spec.Width.Reg.data.W)
+
+                io.outLLbitWrite := (new LLbitWriteNdPort).Lit(
+                    _.en -> true.B,
+                    _.value -> false.B
+                )
+            }.otherwise {
+                out_data := Spec.zeroWord
             }
         }
     }

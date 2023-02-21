@@ -34,6 +34,7 @@ class Cpu(debug: Boolean = false) extends Module {
     val mem2wb = Module(new Mem2wb)
     val hilo = Module(new HiLoReg)
     val ctrl = Module(new Ctrl)
+    val llbit = Module(new LLbit)
 
     // output
 
@@ -106,6 +107,9 @@ class Cpu(debug: Boolean = false) extends Module {
     mem.io.memLS := ex2mem.io.memLSMem
     mem.io.ramRW.dataRead := io.ramRWPort.dataRead
 
+    mem.io.inLLbit := llbit.io.outLLbit
+    mem.io.inLLbitWrite := mem2wb.io.llbitWb
+
     io.ramRWPort.en := mem.io.ramRW.en
     io.ramRWPort.enWrite := mem.io.ramRW.enWrite
     io.ramRWPort.sel := mem.io.ramRW.sel
@@ -118,6 +122,7 @@ class Cpu(debug: Boolean = false) extends Module {
     mem2wb.io.hiloWrite_mem := mem.io.hiloWrite
     mem2wb.io.stallMem := ctrl.io.stallMem
     mem2wb.io.stallWb := ctrl.io.stallWb
+    mem2wb.io.llbitMem := mem.io.outLLbitWrite
 
     // hilo
     hilo.io.write := mem2wb.io.hiloWrite_wb
@@ -126,6 +131,10 @@ class Cpu(debug: Boolean = false) extends Module {
 
     ctrl.io.stallreqId := id.io.stallReq
     ctrl.io.stallreqEx := ex.io.stallReq
+
+    // llbit
+    llbit.io.write := mem2wb.io.llbitWb
+    llbit.io.flush := false.B
     
     // test
     // io.tmp := regfile.io.write.en

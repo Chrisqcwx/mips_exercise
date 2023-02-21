@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 import mips.Spec
 import mips.bundles.{RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
+import mips.bundles.{LLbitWriteNdPort}
 import chisel3.experimental.BundleLiterals._
 
 class Mem2wb extends Module {
@@ -18,6 +19,9 @@ class Mem2wb extends Module {
         // stall
         val stallMem = Input(Bool())
         val stallWb  = Input(Bool())
+        // llbit
+        val llbitMem = Input(new LLbitWriteNdPort)
+        val llbitWb = Output(new LLbitWriteNdPort)
     })
 
     val bridgeReg_regWrite = RegInit(
@@ -38,6 +42,13 @@ class Mem2wb extends Module {
         )
     )
 
+    val bridgeReg_llbit = RegInit(
+        (new LLbitWriteNdPort).Lit(
+            _.en -> false.B,
+            _.value -> false.B
+        )
+    )
+
     when (io.stallMem === true.B && io.stallWb === false.B) {
         bridgeReg_regWrite := (new RegWriteNdPort).Lit(
             _.en -> false.B,
@@ -49,12 +60,18 @@ class Mem2wb extends Module {
             _.hi -> Spec.zeroWord,
             _.lo -> Spec.zeroWord
         )
+        bridgeReg_llbit := (new LLbitWriteNdPort).Lit(
+            _.en -> false.B,
+            _.value -> false.B
+        )
     }.elsewhen (io.stallMem === false.B) {
         bridgeReg_regWrite := io.in_regWritePort
         bridgeReg_hilo := io.hiloWrite_mem
+        bridgeReg_llbit := io.llbitMem
     }
 
 
     io.out_regWritePort := bridgeReg_regWrite
     io.hiloWrite_wb := bridgeReg_hilo
+    io.llbitWb := bridgeReg_llbit
 }

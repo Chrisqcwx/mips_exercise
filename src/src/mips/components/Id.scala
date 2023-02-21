@@ -677,6 +677,15 @@ class Id extends Module {
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
+        is (Spec.Op.Inst.ll) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.ll
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := false.B
+            addr_write := io.idInstPort.inst(20,16)
+            instValid := true.B
+        }
         is (Spec.Op.Inst.sb) {
             en_write := false.B
             aluop := Spec.Op.AluOp.sb
@@ -715,6 +724,15 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.loadStore
             reg_1_en := true.B
             reg_2_en := true.B
+            instValid := true.B
+        }
+        is (Spec.Op.Inst.sc) {
+            en_write := true.B
+            aluop := Spec.Op.AluOp.sc
+            alusel := Spec.Op.AluSel.loadStore
+            reg_1_en := true.B
+            reg_2_en := true.B
+            addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
     }
