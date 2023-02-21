@@ -61,6 +61,7 @@ class Cpu(debug: Boolean = false) extends Module {
     id.io.write_ex := ex.io.regWritePort
     id.io.write_mem := mem.io.out_regWritePort
     id.io.nowDelay := id2ex.io.nowDelay
+    id.io.aluopEx := ex.io.memLS.aluop
 
 
     // regfile

@@ -10,7 +10,7 @@ object Elaborate extends App {
 
   // def top = new DecoupledGcd(16)
   val debug = false
-  def top = new Ram // Cpu(debug=debug)
+  def top = new Cpu(debug=debug)
 
   if (useMFC) {
     (new stage.ChiselStage)

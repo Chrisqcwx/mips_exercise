@@ -22,6 +22,7 @@ class Id extends Module {
         val decode = Output(new IdDecodeNdPort)
         // stall require
         val stallReq = Output(Bool())
+        val aluopEx = Input(UInt(Spec.Width.Alu.op.W))
         // branch
         val branchSet = Output(new BranchSetNdPort)
         val branchValid = Output(new BranchValidNdPort)
@@ -800,6 +801,45 @@ class Id extends Module {
     io.inst := io.idInstPort.inst
 
     // stall
-    io.stallReq := false.B
+    
+
+    def aluopEx = io.aluopEx
+
+    val preIsLoad = Wire(Bool())
+    preIsLoad := VecInit(
+        Spec.Op.AluOp.lb,
+        Spec.Op.AluOp.lbu,
+        Spec.Op.AluOp.lh,
+        Spec.Op.AluOp.lhu,
+        Spec.Op.AluOp.lw,
+        Spec.Op.AluOp.lwl,
+        Spec.Op.AluOp.lwr,
+        Spec.Op.AluOp.ll,
+        Spec.Op.AluOp.sc
+    ).contains(aluopEx)
+
+    val stallReqReg1 = Wire(Bool())
+    val stallReqReg2 = Wire(Bool())
+
+    def dealStallReqReg(
+        stallReqReg : Bool, 
+        enRead      : Bool, 
+        addrRead    : UInt) : Unit = {
+
+        stallReqReg := false.B
+        when (
+            preIsLoad === true.B &&
+            enRead === true.B &&
+            addrRead === io.write_ex.addr
+        ) {
+            stallReqReg := true.B
+        }
+    }
+
+    dealStallReqReg(stallReqReg1, io.read_1.en, io.read_1.addr)
+    dealStallReqReg(stallReqReg2, io.read_2.en, io.read_2.addr)
+
+
+    io.stallReq := stallReqReg1 | stallReqReg2
 
 }
