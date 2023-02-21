@@ -7,69 +7,19 @@ import mips.bundles.{RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
 import mips.bundles.{MemLSNdPort}
 import chisel3.experimental.BundleLiterals._
 
-class Ex2mem extends Module {
-    val io = IO(new Bundle {
-        // reg write
-        val in_regWritePort = Input(new RegWriteNdPort)
-        val out_regWritePort = Output(new RegWriteNdPort)
-        // hilo
-        val hiloWrite_ex = Input(new HiLoWriteNdPort)
-        val hiloWrite_mem = Output(new HiLoWriteNdPort)
-        // stall
-        val stallEx = Input(Bool())
-        val stallMem = Input(Bool())
-        // mem load sava
-        val memLSEx = Input(new MemLSNdPort)
-        val memLSMem = Output(new MemLSNdPort)
-    })
+class Ex2memIOPort extends Bundle {
+    val regWrite = new RegWriteNdPort
+    val hiloWrite = new HiLoWriteNdPort
+    val memLS = new MemLSNdPort
+}
 
-    val bridgeReg_regWrite = RegInit(
-        (new RegWriteNdPort).Lit(
-            _.en -> false.B,
-            _.addr -> Spec.Addr.nop,
-            _.data -> Spec.zeroWord
-        )
+class Ex2mem extends BridgeModule[Ex2memIOPort] {
+
+    def bundleFactory = new Ex2memIOPort
+
+    def defaultValue = (new Ex2memIOPort).Lit(
+        _.regWrite -> RegWriteNdPort.defaultValue,
+        _.hiloWrite -> HiLoWriteNdPort.defaultValue,
+        _.memLS -> MemLSNdPort.defaultValue
     )
-
-    val bridgeReg_hilo = RegInit(
-        (new HiLoWriteNdPort).Lit(
-            _.en -> false.B,
-            _.hi -> Spec.zeroWord,
-            _.lo -> Spec.zeroWord
-        )
-    )
-
-    val bridgeReg_memLS = RegInit(
-        (new MemLSNdPort).Lit(
-            _.aluop -> Spec.Op.AluOp.nop,
-            _.addr -> Spec.Addr.nop,
-            _.data -> Spec.zeroWord
-        )
-    )
-
-    when(io.stallEx === true.B && io.stallMem === false.B) {
-        bridgeReg_regWrite := (new RegWriteNdPort).Lit(
-            _.en -> false.B,
-            _.addr -> Spec.Addr.nop,
-            _.data -> Spec.zeroWord
-        )
-        bridgeReg_hilo := (new HiLoWriteNdPort).Lit(
-            _.en -> false.B,
-            _.hi -> Spec.zeroWord,
-            _.lo -> Spec.zeroWord
-        )
-        bridgeReg_memLS := (new MemLSNdPort).Lit(
-            _.aluop -> Spec.Op.AluOp.nop,
-            _.addr -> Spec.Addr.nop,
-            _.data -> Spec.zeroWord
-        )
-    }.elsewhen(io.stallEx === false.B) {
-        bridgeReg_regWrite := io.in_regWritePort
-        bridgeReg_hilo := io.hiloWrite_ex
-        bridgeReg_memLS := io.memLSEx
-    }
-
-    io.out_regWritePort := bridgeReg_regWrite
-    io.hiloWrite_mem := bridgeReg_hilo
-    io.memLSMem := bridgeReg_memLS
 }

@@ -6,71 +6,23 @@ import mips.Spec
 import mips.bundles.{IdDecodeNdPort, BranchValidNdPort}
 import chisel3.experimental.BundleLiterals._
 
-class Id2ex extends Module {
-    val io = IO(new Bundle {
-        val input = Input(new IdDecodeNdPort)
-        val output = Output( new IdDecodeNdPort)
-        // inst
-        val instId = Input(UInt(Spec.Width.Rom.data.W))
-        val instEx = Output(UInt(Spec.Width.Rom.data.W))
-        // stall
-        val stallId = Input(Bool())
-        val stallEx = Input(Bool())
-        // branch
-        val inBranchValid = Input(new BranchValidNdPort)
-        val outBranchValid = Output(new BranchValidNdPort)
-        val nextDelay = Input(Bool())
-        val nowDelay = Output(Bool())
-    })
+class Id2exIOPort extends Bundle {
+    val idDecode = new IdDecodeNdPort
+    val inst = UInt(Spec.Width.Rom.data.W)
+    val branchValid = new BranchValidNdPort
+    val delay = Bool()
+}
 
-    val bridgeRegIdDecode = RegInit(
-        (new IdDecodeNdPort).Lit(
-            _.aluop -> Spec.Op.AluOp.nop,
-            _.alusel -> Spec.Op.AluSel.nop,
-            _.reg_1 -> Spec.zeroWord,
-            _.reg_2 -> Spec.zeroWord,
-            _.en_write -> false.B,
-            _.addr_write -> Spec.Addr.nop
-        )
-    )
-
-    val bridegRegBranchValid = RegInit(
-        (new BranchValidNdPort).Lit(
-            _.inDelaySlot -> false.B,
-            _.addr -> Spec.Addr.nop
-        )
-    )
-
-    val bridgeRegDelay = RegInit(false.B)
-    val bridgeRegInst = RegInit(Spec.zeroWord)
-
-    when(io.stallId === true.B && io.stallEx === false.B) {
-        bridgeRegIdDecode := (new IdDecodeNdPort).Lit(
-            _.aluop -> Spec.Op.AluOp.nop,
-            _.alusel -> Spec.Op.AluSel.nop,
-            _.reg_1 -> Spec.zeroWord,
-            _.reg_2 -> Spec.zeroWord,
-            _.en_write -> false.B,
-            _.addr_write -> Spec.Addr.nop
-        )
-        bridegRegBranchValid := (new BranchValidNdPort).Lit(
-            _.inDelaySlot -> false.B,
-            _.addr -> Spec.Addr.nop
-        )
-
-        bridgeRegInst := Spec.zeroWord
-
-    }.elsewhen(io.stallId === false.B) {
-        bridgeRegIdDecode := io.input
-        bridegRegBranchValid := io.inBranchValid
-        bridgeRegDelay := io.nextDelay
-
-        bridgeRegInst := io.instId
-    }
-
-    io.output := bridgeRegIdDecode
-    io.nowDelay := bridgeRegDelay
-    io.outBranchValid := bridegRegBranchValid
-    io.instEx := bridgeRegInst
+class Id2ex extends BridgeModule[Id2exIOPort] {
     
+    def bundleFactory = new Id2exIOPort
+    // val bundleFactory = defaultValue
+    
+    def defaultValue = (new Id2exIOPort).Lit(
+        _.idDecode -> IdDecodeNdPort.defaultValue,
+        _.inst -> Spec.zeroWord,
+        _.branchValid -> BranchValidNdPort.defaultValue,
+        _.delay -> false.B
+    )
+
 }

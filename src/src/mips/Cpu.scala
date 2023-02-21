@@ -48,19 +48,19 @@ class Cpu(debug: Boolean = false) extends Module {
 
     // if2id    
 
-    if2id.io.input.pc := pc.io.pc
-    if2id.io.input.inst := io.romReadPort.data
-    if2id.io.stallIf := ctrl.io.stallIf
-    if2id.io.stallId := ctrl.io.stallId
+    if2id.io.input.idInst.pc := pc.io.pc
+    if2id.io.input.idInst.inst := io.romReadPort.data
+    if2id.io.stallPrev := ctrl.io.stallIf
+    if2id.io.stallNext := ctrl.io.stallId
 
     // id
 
-    id.io.idInstPort := if2id.io.output
+    id.io.idInstPort := if2id.io.output.idInst
     id.io.read_1.data := regfile.io.read_1.data
     id.io.read_2.data := regfile.io.read_2.data
     id.io.write_ex := ex.io.regWritePort
     id.io.write_mem := mem.io.out_regWritePort
-    id.io.nowDelay := id2ex.io.nowDelay
+    id.io.nowDelay := id2ex.io.output.delay
     id.io.aluopEx := ex.io.memLS.aluop
 
 
@@ -70,46 +70,46 @@ class Cpu(debug: Boolean = false) extends Module {
     regfile.io.read_2.en := id.io.read_2.en
     regfile.io.read_1.addr := id.io.read_1.addr
     regfile.io.read_2.addr := id.io.read_2.addr
-    regfile.io.write := mem2wb.io.out_regWritePort
+    regfile.io.write := mem2wb.io.output.regWrite
     
 
     // id2ex
 
-    id2ex.io.input := id.io.decode
-    id2ex.io.stallId := ctrl.io.stallId
-    id2ex.io.stallEx := ctrl.io.stallEx
-    id2ex.io.nextDelay := id.io.nextDelay
-    id2ex.io.inBranchValid := id.io.branchValid
-    id2ex.io.instId := id.io.inst
+    id2ex.io.input.idDecode := id.io.decode
+    id2ex.io.stallPrev := ctrl.io.stallId
+    id2ex.io.stallNext := ctrl.io.stallEx
+    id2ex.io.input.delay := id.io.nextDelay
+    id2ex.io.input.branchValid := id.io.branchValid
+    id2ex.io.input.inst := id.io.inst
 
     
     // ex
 
-    ex.io.idDecodePort := id2ex.io.output
+    ex.io.idDecodePort := id2ex.io.output.idDecode
     ex.io.hiloRead := hilo.io.output
     ex.io.hiloWrite_mem := mem.io.hiloWrite
-    ex.io.hiloWrite_wb := mem2wb.io.hiloWrite_wb
-    ex.io.branchValid := id2ex.io.outBranchValid
-    ex.io.inst := id2ex.io.instEx
+    ex.io.hiloWrite_wb := mem2wb.io.output.hiloWrite
+    ex.io.branchValid := id2ex.io.output.branchValid
+    ex.io.inst := id2ex.io.output.inst
     
     // ex2mem
 
-    ex2mem.io.in_regWritePort := ex.io.regWritePort
-    ex2mem.io.hiloWrite_ex := ex.io.hiloWrite
-    ex2mem.io.stallEx := ctrl.io.stallEx
-    ex2mem.io.stallMem := ctrl.io.stallMem
-    ex2mem.io.memLSEx := ex.io.memLS
+    ex2mem.io.input.regWrite := ex.io.regWritePort
+    ex2mem.io.input.hiloWrite := ex.io.hiloWrite
+    ex2mem.io.stallPrev := ctrl.io.stallEx
+    ex2mem.io.stallNext := ctrl.io.stallMem
+    ex2mem.io.input.memLS := ex.io.memLS
 
     
     // mem
 
-    mem.io.in_regWritePort := ex2mem.io.out_regWritePort
-    mem.io.hiloWrite_ex := ex2mem.io.hiloWrite_mem
-    mem.io.memLS := ex2mem.io.memLSMem
+    mem.io.in_regWritePort := ex2mem.io.output.regWrite
+    mem.io.hiloWrite_ex := ex2mem.io.output.hiloWrite
+    mem.io.memLS := ex2mem.io.output.memLS
     mem.io.ramRW.dataRead := io.ramRWPort.dataRead
 
     mem.io.inLLbit := llbit.io.outLLbit
-    mem.io.inLLbitWrite := mem2wb.io.llbitWb
+    mem.io.inLLbitWrite := mem2wb.io.output.llbit
 
     io.ramRWPort.en := mem.io.ramRW.en
     io.ramRWPort.enWrite := mem.io.ramRW.enWrite
@@ -119,14 +119,14 @@ class Cpu(debug: Boolean = false) extends Module {
     
     // mem2wb
 
-    mem2wb.io.in_regWritePort := mem.io.out_regWritePort
-    mem2wb.io.hiloWrite_mem := mem.io.hiloWrite
-    mem2wb.io.stallMem := ctrl.io.stallMem
-    mem2wb.io.stallWb := ctrl.io.stallWb
-    mem2wb.io.llbitMem := mem.io.outLLbitWrite
+    mem2wb.io.input.regWrite := mem.io.out_regWritePort
+    mem2wb.io.input.hiloWrite := mem.io.hiloWrite
+    mem2wb.io.stallPrev := ctrl.io.stallMem
+    mem2wb.io.stallNext := ctrl.io.stallWb
+    mem2wb.io.input.llbit := mem.io.outLLbitWrite
 
     // hilo
-    hilo.io.write := mem2wb.io.hiloWrite_wb
+    hilo.io.write := mem2wb.io.output.hiloWrite
     
     // ctrl
 
@@ -134,7 +134,7 @@ class Cpu(debug: Boolean = false) extends Module {
     ctrl.io.stallreqEx := ex.io.stallReq
 
     // llbit
-    llbit.io.write := mem2wb.io.llbitWb
+    llbit.io.write := mem2wb.io.output.llbit
     llbit.io.flush := false.B
     
     // test
@@ -144,8 +144,8 @@ class Cpu(debug: Boolean = false) extends Module {
 
     if (debug) {
         io.cpuDebugPort.get.regFileRegs := regfile.io.regFileRegs
-        io.cpuDebugPort.get.id_reg_data1 := id.io.decode.reg_1
-        io.cpuDebugPort.get.id_reg_data2 := id.io.decode.reg_2
-        io.cpuDebugPort.get.rf_write := mem2wb.io.out_regWritePort
+        io.cpuDebugPort.get.id_reg_data1 := id.io.decode.reg1
+        io.cpuDebugPort.get.id_reg_data2 := id.io.decode.reg2
+        io.cpuDebugPort.get.rf_write := mem2wb.io.output.regWrite
     }
 }

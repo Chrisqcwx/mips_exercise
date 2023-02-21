@@ -45,6 +45,7 @@ object SopcSpec extends ChiselUtestTester {
 
           sopc.clock.step(5)
         //   println((3.U).toString(2))
+          
 
       }
     }

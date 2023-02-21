@@ -78,10 +78,10 @@ class Id extends Module {
 
     io.decode.aluop := aluop
     io.decode.alusel := alusel
-    io.decode.reg_1 := reg_1_o
-    io.decode.reg_2 := reg_2_o
-    io.decode.en_write := en_write
-    io.decode.addr_write := addr_write
+    io.decode.reg1 := reg_1_o
+    io.decode.reg2 := reg_2_o
+    io.decode.enWrite := en_write
+    io.decode.addrWrite := addr_write
 
     // branch
 
@@ -216,7 +216,7 @@ class Id extends Module {
                         }
                         is (Spec.Op.Inst.movn){
                             // en_write := true.B
-                            when (io.decode.reg_2 === 0.U(Spec.Width.Reg.data.W)) {
+                            when (io.decode.reg2 === 0.U(Spec.Width.Reg.data.W)) {
                                 en_write := false.B
                             }.otherwise{
                                 en_write := true.B
@@ -229,7 +229,7 @@ class Id extends Module {
                         }
                         is (Spec.Op.Inst.movz){
                             // en_write := true.B
-                            when (io.decode.reg_2 === 0.U(Spec.Width.Reg.data.W)) {
+                            when (io.decode.reg2 === 0.U(Spec.Width.Reg.data.W)) {
                                 en_write := true.B
                             }.otherwise{
                                 en_write := false.B

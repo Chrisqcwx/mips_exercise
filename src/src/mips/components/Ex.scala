@@ -74,8 +74,8 @@ class Ex extends Module {
     // aluop
 
     def aluop = io.idDecodePort.aluop
-    def reg_1_data = io.idDecodePort.reg_1
-    def reg_2_data = io.idDecodePort.reg_2
+    def reg_1_data = io.idDecodePort.reg1
+    def reg_2_data = io.idDecodePort.reg2
 
     // logic
 
@@ -193,10 +193,10 @@ class Ex extends Module {
     //     }
     //     count_clzo_single(31)
     // }
-    //count_clzo(io.idDecodePort.reg_1, 0.U) 
+    //count_clzo(io.idDecodePort.reg1, 0.U) 
     // io.tmp_clz := PriorityMux(
     //     Seq.range(31,-1,-1).map{index =>
-    //         (io.idDecodePort.reg_1(index)===1.U(1.W)) -> (31-index).U(32.W)
+    //         (io.idDecodePort.reg1(index)===1.U(1.W)) -> (31-index).U(32.W)
     //     } ++ Seq(
     //         true.B -> 32.U(32.W)
     //     )
@@ -218,7 +218,7 @@ class Ex extends Module {
         is (Spec.Op.AluOp.clz) {
             arithmetic := PriorityMux(
                 Seq.range(Spec.Width.Reg.data-1,-1,-1).map{index =>
-                    (io.idDecodePort.reg_1(index)===1.U(1.W)) -> (Spec.Width.Reg.data-1-index).U(Spec.Width.Reg.data.W)
+                    (io.idDecodePort.reg1(index)===1.U(1.W)) -> (Spec.Width.Reg.data-1-index).U(Spec.Width.Reg.data.W)
                 } ++ Seq(
                     true.B -> Spec.Width.Reg.data.U(Spec.Width.Reg.data.W)
                 )
@@ -227,7 +227,7 @@ class Ex extends Module {
         is (Spec.Op.AluOp.clo) {
             arithmetic := PriorityMux(
                 Seq.range(Spec.Width.Reg.data-1,-1,-1).map{index =>
-                    (io.idDecodePort.reg_1(index)===0.U(1.W)) -> (Spec.Width.Reg.data-1-index).U(Spec.Width.Reg.data.W)
+                    (io.idDecodePort.reg1(index)===0.U(1.W)) -> (Spec.Width.Reg.data-1-index).U(Spec.Width.Reg.data.W)
                 } ++ Seq(
                     true.B -> Spec.Width.Reg.data.U(Spec.Width.Reg.data.W)
                 )
@@ -250,8 +250,8 @@ class Ex extends Module {
 
     def alusel = io.idDecodePort.alusel
     def en_write = io.regWritePort.en
-    def addr_write = io.regWritePort.addr
-    def data_write = io.regWritePort.data
+    def addrWrite = io.regWritePort.addr
+    def dataWrite = io.regWritePort.data
 
     
     when (
@@ -261,30 +261,30 @@ class Ex extends Module {
     ) {
         en_write := false.B
     }.otherwise {
-        en_write := io.idDecodePort.en_write
+        en_write := io.idDecodePort.enWrite
     }
 
-    addr_write := io.idDecodePort.addr_write
-    data_write := Spec.zeroWord
+    addrWrite := io.idDecodePort.addrWrite
+    dataWrite := Spec.zeroWord
 
     switch (alusel) {
         is (Spec.Op.AluSel.logic) {
-            data_write := logic_out
+            dataWrite := logic_out
         }
         is (Spec.Op.AluSel.shift) {
-            data_write := shift_res
+            dataWrite := shift_res
         }
         is (Spec.Op.AluSel.move) {
-            data_write := move_res
+            dataWrite := move_res
         }
         is (Spec.Op.AluSel.arithmetic) {
-            data_write := arithmetic
+            dataWrite := arithmetic
         }
         is (Spec.Op.AluSel.mul) {
-            data_write := mul_res
+            dataWrite := mul_res
         }
         is (Spec.Op.AluSel.jumpBranch) {
-            data_write := io.branchValid.addr
+            dataWrite := io.branchValid.addr
         }
     }
 
