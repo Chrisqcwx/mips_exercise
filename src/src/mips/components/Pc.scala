@@ -19,9 +19,6 @@ class Pc extends Module {
     io.ce := ce
 
     val pc = RegInit(Spec.zeroWord)
-    // when (ce === true.B && io.stall === false.B) {
-    //     pc := pc + 4.U(Spec.Width.Reg.data.W)
-    // }
 
     when (ce === false.B) {
         pc := Spec.zeroWord

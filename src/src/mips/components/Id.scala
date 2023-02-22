@@ -36,9 +36,9 @@ class Id extends Module {
     def op4 = io.idInstPort.inst(20,16)
 
 
-    val imm = Wire(UInt(Spec.Width.Reg.data.W))
+    val imm = Wire(SInt(Spec.Width.Reg.data.W))
     val imm_final = Wire(UInt(Spec.Width.Reg.data.W))
-    imm := Spec.zeroWord
+    imm := Spec.zeroWord.asSInt
 
     val instValid = Wire(Bool())
     instValid := false.B
@@ -102,13 +102,12 @@ class Id extends Module {
     pcAdd4 := io.idInstPort.pc + 4.U
     pcAdd8 := io.idInstPort.pc + 8.U
     
-    val immSll2Signedext = Wire(UInt(Spec.Width.Reg.data.W))
+    val immSll2Signedext = Wire(SInt(Spec.Width.Reg.data.W))
     immSll2Signedext := Cat(
-        Fill(14, io.idInstPort.inst(15)),
         io.idInstPort.inst(15,0),
+        // io.idInstPort.inst(15,0),
         0.U(2.W)
-    )
-
+    ).asSInt
     // decode
     
     switch (op) {
@@ -342,7 +341,8 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.logic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(0.U(16.W), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
+            // imm := Cat(0.U(16.W), io.idInstPort.inst(15,0))
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -352,7 +352,8 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.logic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(0.U(16.W), io.idInstPort.inst(15,0))
+            // imm := Cat(0.U(16.W), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -362,7 +363,7 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.logic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(0.U(16.W), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -372,7 +373,7 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.logic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(io.idInstPort.inst(15,0), 0.U(16.W))
+            imm := (io.idInstPort.inst(15,0) << 16).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -390,7 +391,7 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.arithmetic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -400,7 +401,7 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.arithmetic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -410,7 +411,7 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.arithmetic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -420,7 +421,7 @@ class Id extends Module {
             alusel := Spec.Op.AluSel.arithmetic
             reg_1_en := true.B
             reg_2_en := false.B
-            imm := Cat(Fill(16,io.idInstPort.inst(15)), io.idInstPort.inst(15,0))
+            imm := io.idInstPort.inst(15,0).asSInt
             addr_write := io.idInstPort.inst(20,16)
             instValid := true.B
         }
@@ -497,7 +498,7 @@ class Id extends Module {
 
             when (reg_1_o === reg_2_o) {
                 branchSetEn := true.B
-                branchSetAddr := pcAdd4 + immSll2Signedext
+                branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                 nextDelay := true.B
             }
         }
@@ -514,7 +515,7 @@ class Id extends Module {
                 reg_1_o =/= Spec.zeroWord
             ) {
                 branchSetEn := true.B
-                branchSetAddr := pcAdd4 + immSll2Signedext
+                branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                 nextDelay := true.B
             }
         }
@@ -531,7 +532,7 @@ class Id extends Module {
                 reg_1_o === Spec.zeroWord
             ) {
                 branchSetEn := true.B
-                branchSetAddr := pcAdd4 + immSll2Signedext
+                branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                 nextDelay := true.B
             }
         }
@@ -545,7 +546,7 @@ class Id extends Module {
 
             when (reg_1_o =/= reg_2_o) {
                 branchSetEn := true.B
-                branchSetAddr := pcAdd4 + immSll2Signedext
+                branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                 nextDelay := true.B
             }
         }
@@ -561,7 +562,7 @@ class Id extends Module {
 
                     when (reg_1_o(31) === 0.U(1.W)) {
                         branchSetEn := true.B
-                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                         nextDelay := true.B
                     }
                 }
@@ -578,7 +579,7 @@ class Id extends Module {
 
                     when (reg_1_o(31) === 0.U(1.W)) {
                         branchSetEn := true.B
-                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                         nextDelay := true.B
                     }
                 }
@@ -592,7 +593,7 @@ class Id extends Module {
 
                     when (reg_1_o(31) === 1.U(1.W)) {
                         branchSetEn := true.B
-                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                         nextDelay := true.B
                     }
                 }
@@ -609,7 +610,7 @@ class Id extends Module {
 
                     when (reg_1_o(31) === 1.U(1.W)) {
                         branchSetEn := true.B
-                        branchSetAddr := pcAdd4 + immSll2Signedext
+                        branchSetAddr := pcAdd4 + immSll2Signedext.asUInt
                         nextDelay := true.B
                     }
                 }
@@ -738,7 +739,7 @@ class Id extends Module {
         }
     }
 
-    imm_final := imm
+    imm_final := imm.asUInt
 
     when (io.idInstPort.inst(31,21)===0.U(11.W)){
         switch (op3) {
