@@ -33,27 +33,20 @@ class Ex extends Module {
 
     // result
 
-    val logic_out = Wire(UInt(Spec.Width.Reg.data.W))
-    logic_out := Spec.zeroWord
+    val logic_out = WireInit(Spec.zeroWord)
 
-    val shift_res = Wire(UInt(Spec.Width.Reg.data.W))
-    shift_res := Spec.zeroWord
+    val shift_res = WireInit(Spec.zeroWord)
 
-    val move_res = Wire(UInt(Spec.Width.Reg.data.W))
-    move_res := Spec.zeroWord
+    val move_res = WireInit(Spec.zeroWord)
 
-    val hi = Wire(UInt(Spec.Width.Reg.data.W))
-    hi := Spec.zeroWord
+    val hi = WireInit(Spec.zeroWord)
 
-    val lo = Wire(UInt(Spec.Width.Reg.data.W))
-    lo := Spec.zeroWord
+    val lo = WireInit(Spec.zeroWord)
 
-    val arithmetic = Wire(UInt(Spec.Width.Reg.data.W))
-    arithmetic := Spec.zeroWord
+    val arithmetic = WireInit(Spec.zeroWord)
     
 
-    val mul_res = Wire(UInt(Spec.Width.Reg.doubleData.W))
-    mul_res := 0.U(Spec.Width.Reg.doubleData.W)
+    val mul_res = WireInit(0.U(Spec.Width.Reg.doubleData.W))
     
 
 
@@ -139,8 +132,7 @@ class Ex extends Module {
         reg_2_data_mux := reg_2_data
     }
 
-    val result_sum = Wire(UInt(Spec.Width.Reg.data.W))
-    result_sum := reg_1_data + reg_2_data_mux
+    val result_sum = WireInit(reg_1_data + reg_2_data_mux)
 
     // 溢出
     

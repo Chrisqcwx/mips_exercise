@@ -36,25 +36,26 @@ class Id extends Module {
     def op4 = io.idInstPort.inst(20,16)
 
 
-    val imm = Wire(SInt(Spec.Width.Reg.data.W))
+    // val imm = Wire(SInt(Spec.Width.Reg.data.W))
+    
+    val imm = WireInit(Spec.zeroWord.asSInt)
     val imm_final = Wire(UInt(Spec.Width.Reg.data.W))
-    imm := Spec.zeroWord.asSInt
+    // imm := Spec.zeroWord.asSInt
 
-    val instValid = Wire(Bool())
-    instValid := false.B
+    val instValid = WireInit(false.B)
 
     // to regfile
     def reg_1_data = io.read_1.data
     def reg_2_data = io.read_2.data
-    val reg_1_en = Wire(Bool()) //RegInit(false.B)
-    val reg_1_addr = Wire(UInt(Spec.Width.Reg.addr.W)) //RegInit(Spec.Addr.nop)
-    val reg_2_en = Wire(Bool())
-    val reg_2_addr = Wire(UInt(Spec.Width.Reg.addr.W))
+    val reg_1_en = WireInit(false.B) //RegInit(false.B)
+    val reg_1_addr = WireInit(io.idInstPort.inst(25,21)) //RegInit(Spec.Addr.nop)
+    val reg_2_en = WireInit(false.B)
+    val reg_2_addr = WireInit(io.idInstPort.inst(20,16))
 
-    reg_1_en := false.B
-    reg_2_en := false.B
-    reg_1_addr := io.idInstPort.inst(25,21)
-    reg_2_addr := io.idInstPort.inst(20,16)
+    // reg_1_en := false.B
+    // reg_2_en := false.B
+    // reg_1_addr := io.idInstPort.inst(25,21)
+    // reg_2_addr := io.idInstPort.inst(20,16)
 
     io.read_1.en := reg_1_en
     io.read_1.addr := reg_1_addr
@@ -62,19 +63,20 @@ class Id extends Module {
     io.read_2.addr := reg_2_addr
 
     // to ex
-    val aluop = Wire(UInt(Spec.Width.Alu.op.W))   //  RegInit(Spec.Op.AluOp.nop)
-    val alusel = Wire(UInt(Spec.Width.Alu.sel.W))   //  RegInit(Spec.Op.AluSel.nop)
-    val reg_1_o = Wire(UInt(Spec.Width.Reg.data.W))   //  RegInit(Spec.zeroWord)
-    val reg_2_o = Wire(UInt(Spec.Width.Reg.data.W))   //  RegInit(Spec.zeroWord)
-    val en_write = Wire(Bool())   //  RegInit(false.B)
-    val addr_write = Wire(UInt(Spec.Width.Reg.addr.W))   //  RegInit(Spec.Addr.nop)
+    // val aluop = Wire(UInt(Spec.Width.Alu.op.W))   
+    val aluop = WireInit(Spec.Op.AluOp.nop)
+    val alusel = WireInit(Spec.Op.AluSel.nop)   
+    val reg_1_o = WireInit(Spec.zeroWord)   
+    val reg_2_o = WireInit(Spec.zeroWord)   
+    val en_write = WireInit(false.B) 
+    val addr_write = WireInit(io.idInstPort.inst(15,11))   
 
-    aluop := Spec.Op.AluOp.nop
-    alusel := Spec.Op.AluSel.nop
-    reg_1_o := Spec.zeroWord
-    reg_2_o := Spec.zeroWord
-    en_write := false.B
-    addr_write := io.idInstPort.inst(15,11)
+    // aluop := Spec.Op.AluOp.nop
+    // alusel := Spec.Op.AluSel.nop
+    // reg_1_o := Spec.zeroWord
+    // reg_2_o := Spec.zeroWord
+    // en_write := false.B
+    // addr_write := io.idInstPort.inst(15,11)
 
     io.decode.aluop := aluop
     io.decode.alusel := alusel
@@ -97,17 +99,19 @@ class Id extends Module {
     branchSetAddr := Spec.Addr.nop
     branchValidAddr := Spec.Addr.nop
 
-    val pcAdd4 = Wire(UInt(Spec.Width.Rom.addr.W))
-    val pcAdd8 = Wire(UInt(Spec.Width.Rom.addr.W))
-    pcAdd4 := io.idInstPort.pc + 4.U
-    pcAdd8 := io.idInstPort.pc + 8.U
+    val pcAdd4 = WireInit(io.idInstPort.pc + 4.U)
+    val pcAdd8 = WireInit(io.idInstPort.pc + 8.U)
+    // pcAdd4 := io.idInstPort.pc + 4.U
+    // pcAdd8 := io.idInstPort.pc + 8.U
     
-    val immSll2Signedext = Wire(SInt(Spec.Width.Reg.data.W))
-    immSll2Signedext := Cat(
-        io.idInstPort.inst(15,0),
-        // io.idInstPort.inst(15,0),
-        0.U(2.W)
-    ).asSInt
+    //val immSll2Signedext = WireInit(SInt(Spec.Width.Reg.data.W))
+    val immSll2Signedext = WireInit(
+        Cat(
+            io.idInstPort.inst(15,0),
+            0.U(2.W)
+        ).asSInt
+    )
+
     // decode
     
     switch (op) {
@@ -806,28 +810,28 @@ class Id extends Module {
 
     def aluopEx = io.aluopEx
 
-    val preIsLoad = Wire(Bool())
-    preIsLoad := VecInit(
-        Spec.Op.AluOp.lb,
-        Spec.Op.AluOp.lbu,
-        Spec.Op.AluOp.lh,
-        Spec.Op.AluOp.lhu,
-        Spec.Op.AluOp.lw,
-        Spec.Op.AluOp.lwl,
-        Spec.Op.AluOp.lwr,
-        Spec.Op.AluOp.ll,
-        Spec.Op.AluOp.sc
-    ).contains(aluopEx)
+    val preIsLoad = WireInit(
+        VecInit(
+            Spec.Op.AluOp.lb,
+            Spec.Op.AluOp.lbu,
+            Spec.Op.AluOp.lh,
+            Spec.Op.AluOp.lhu,
+            Spec.Op.AluOp.lw,
+            Spec.Op.AluOp.lwl,
+            Spec.Op.AluOp.lwr,
+            Spec.Op.AluOp.ll,
+            Spec.Op.AluOp.sc
+        ).contains(aluopEx)
+    )
 
-    val stallReqReg1 = Wire(Bool())
-    val stallReqReg2 = Wire(Bool())
+    val stallReqReg1 = WireInit(false.B)
+    val stallReqReg2 = WireInit(false.B)
 
     def dealStallReqReg(
         stallReqReg : Bool, 
         enRead      : Bool, 
         addrRead    : UInt) : Unit = {
 
-        stallReqReg := false.B
         when (
             preIsLoad === true.B &&
             enRead === true.B &&
