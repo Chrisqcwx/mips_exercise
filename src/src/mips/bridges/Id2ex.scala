@@ -13,9 +13,9 @@ class Id2exIOPort extends Bundle {
     val delay = Bool()
 }
 
-class Id2ex extends BridgeModule[Id2exIOPort] {
+class Id2ex extends BridgeModule(new Id2exIOPort) {
     
-    def bundleFactory = new Id2exIOPort
+    // def bundleFactory = new Id2exIOPort
     // val bundleFactory = defaultValue
     
     def defaultValue = (new Id2exIOPort).Lit(

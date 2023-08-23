@@ -13,9 +13,7 @@ class Mem2wbIOPort extends Bundle {
     val llbit = new LLbitWriteNdPort
 }
 
-class Mem2wb extends BridgeModule[Mem2wbIOPort] {
-    
-    def bundleFactory = new Mem2wbIOPort
+class Mem2wb extends BridgeModule(new Mem2wbIOPort) {
 
     def defaultValue = (new Mem2wbIOPort).Lit(
         _.regWrite -> RegWriteNdPort.defaultValue,

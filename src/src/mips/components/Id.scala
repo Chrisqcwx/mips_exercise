@@ -6,9 +6,10 @@ import mips.Spec
 import mips.bundles.{RfReadPort, IdInstNdPort, IdDecodeNdPort, RegWriteNdPort}
 import mips.bundles.{BranchSetNdPort, BranchValidNdPort}
 import chisel3.experimental.BundleLiterals._
+import chisel3.experimental.FlatIO
 
 class Id extends Module {
-    val io = IO(new Bundle {
+    val io = FlatIO(new Bundle {
         val idInstPort = Input(new IdInstNdPort)
         val inst = Output(UInt(Spec.Width.Rom.data.W))
         // to regfile

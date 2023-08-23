@@ -6,9 +6,10 @@ import mips.Spec
 import mips.bundles.{IdDecodeNdPort, RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
 import mips.bundles.{BranchValidNdPort}
 import mips.bundles.{MemLSNdPort}
+import chisel3.experimental.FlatIO
 
 class Ex extends Module {
-    val io = IO(new Bundle {
+    val io = FlatIO(new Bundle {
         // from id
         val idDecodePort = Input(new IdDecodeNdPort)
         val inst = Input(UInt(Spec.Width.Rom.data.W))
@@ -33,11 +34,11 @@ class Ex extends Module {
 
     // result
 
-    val logic_out = WireInit(Spec.zeroWord)
+    val logicOut = WireInit(Spec.zeroWord)
 
-    val shift_res = WireInit(Spec.zeroWord)
+    val shiftOut = WireInit(Spec.zeroWord)
 
-    val move_res = WireInit(Spec.zeroWord)
+    val moveOut = WireInit(Spec.zeroWord)
 
     val hi = WireInit(Spec.zeroWord)
 
@@ -46,7 +47,7 @@ class Ex extends Module {
     val arithmetic = WireInit(Spec.zeroWord)
     
 
-    val mul_res = WireInit(0.U(Spec.Width.Reg.doubleData.W))
+    val mulOut = WireInit(0.U(Spec.Width.Reg.doubleData.W))
     
 
 
@@ -74,16 +75,16 @@ class Ex extends Module {
 
     switch(aluop) {
         is (Spec.Op.AluOp.or) {
-            logic_out := (reg_1_data | reg_2_data)
+            logicOut := (reg_1_data | reg_2_data)
         }
         is (Spec.Op.AluOp.and) {
-            logic_out := (reg_1_data & reg_2_data)
+            logicOut := (reg_1_data & reg_2_data)
         }
         is (Spec.Op.AluOp.nor) {
-            logic_out := ~ (reg_1_data | reg_2_data)
+            logicOut := ~ (reg_1_data | reg_2_data)
         }
         is (Spec.Op.AluOp.xor) {
-            logic_out := (reg_1_data ^ reg_2_data)
+            logicOut := (reg_1_data ^ reg_2_data)
         }
     }
 
@@ -91,13 +92,13 @@ class Ex extends Module {
 
     switch(aluop) {
         is (Spec.Op.AluOp.sll) {
-            shift_res := reg_2_data << reg_1_data(4,0)
+            shiftOut := reg_2_data << reg_1_data(4,0)
         }
         is (Spec.Op.AluOp.srl) {
-            shift_res := reg_2_data >> reg_1_data(4,0)
+            shiftOut := reg_2_data >> reg_1_data(4,0)
         }
         is (Spec.Op.AluOp.sra) {
-            shift_res := (reg_2_data.asSInt() >> reg_1_data(4,0)).asUInt()
+            shiftOut := (reg_2_data.asSInt() >> reg_1_data(4,0)).asUInt()
         }
     }
 
@@ -105,16 +106,16 @@ class Ex extends Module {
 
     switch(aluop) {
         is (Spec.Op.AluOp.mfhi) {
-            move_res := hi
+            moveOut := hi
         }
         is (Spec.Op.AluOp.mflo) {
-            move_res := lo
+            moveOut := lo
         }
         is (Spec.Op.AluOp.movz) {
-            move_res := reg_1_data
+            moveOut := reg_1_data
         }
         is (Spec.Op.AluOp.movn) {
-            move_res := reg_1_data
+            moveOut := reg_1_data
         }
 
     }
@@ -230,10 +231,10 @@ class Ex extends Module {
     // mul
     switch (aluop) {
         is (Spec.Op.AluOp.mul, Spec.Op.AluOp.mult) {
-            mul_res := (reg_1_data.asSInt() * reg_2_data.asSInt()).asUInt()
+            mulOut := (reg_1_data.asSInt() * reg_2_data.asSInt()).asUInt()
         }
         is (Spec.Op.AluOp.multu) {
-            mul_res := reg_1_data * reg_2_data
+            mulOut := reg_1_data * reg_2_data
         }
     }
     
@@ -261,19 +262,19 @@ class Ex extends Module {
 
     switch (alusel) {
         is (Spec.Op.AluSel.logic) {
-            dataWrite := logic_out
+            dataWrite := logicOut
         }
         is (Spec.Op.AluSel.shift) {
-            dataWrite := shift_res
+            dataWrite := shiftOut
         }
         is (Spec.Op.AluSel.move) {
-            dataWrite := move_res
+            dataWrite := moveOut
         }
         is (Spec.Op.AluSel.arithmetic) {
             dataWrite := arithmetic
         }
         is (Spec.Op.AluSel.mul) {
-            dataWrite := mul_res
+            dataWrite := mulOut
         }
         is (Spec.Op.AluSel.jumpBranch) {
             dataWrite := io.branchValid.addr
@@ -306,8 +307,8 @@ class Ex extends Module {
         }    
         is(Spec.Op.AluOp.mult, Spec.Op.AluOp.multu) {
             hiloWrite_en := true.B
-            hiloWrite_hi := mul_res(Spec.Width.Reg.doubleData-1, Spec.Width.Reg.data)
-            hiloWrite_lo := mul_res(Spec.Width.Reg.data-1, 0)
+            hiloWrite_hi := mulOut(Spec.Width.Reg.doubleData-1, Spec.Width.Reg.data)
+            hiloWrite_lo := mulOut(Spec.Width.Reg.data-1, 0)
         }
     }
 

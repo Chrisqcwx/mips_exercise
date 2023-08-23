@@ -3,9 +3,10 @@ package mips.components
 import chisel3._
 import chisel3.util._
 import mips.Spec
+import chisel3.experimental.FlatIO
 
 class Ctrl extends Module {
-    val io = IO(new Bundle {
+    val io = FlatIO(new Bundle {
         val stallreqId  = Input(Bool())
         val stallreqEx  = Input(Bool())
         val stallPc     = Output(Bool())

@@ -7,9 +7,12 @@ import mips.bundles.{RegWriteNdPort, HiLoReadNdPort, HiLoWriteNdPort}
 import mips.bundles.{MemLSNdPort,RamRWPort}
 import mips.bundles.{LLbitWriteNdPort}
 import chisel3.experimental.BundleLiterals._
+import chisel3.experimental.FlatIO
+
+import scala.collection.immutable
 
 class Mem extends Module {
-    val io = IO(new Bundle {
+    val io = FlatIO(new Bundle {
         // regfile
         val in_regWritePort = Input(new RegWriteNdPort)
         val out_regWritePort = Output(new RegWriteNdPort)
@@ -97,41 +100,36 @@ class Mem extends Module {
             ramEn := true.B
             val addrLast = writeAddr(1,0)
             ramSel := Reverse(UIntToOH(addrLast,Spec.Width.Ram.sel))
-            switch (addrLast) {
-                is ("b00".U(2.W)) {
-                    out_data := fillSInt(ramRead(31,24),24)
-                }
-                is ("b01".U(2.W)) {
-                    out_data := fillSInt(ramRead(23,16),24)
-                }
-                is ("b10".U(2.W)) {
-                    out_data := fillSInt(ramRead(15,8),24)
-                }
-                is ("b11".U(2.W)) {
-                    out_data := fillSInt(ramRead(7,0),24)
-                }
-            }
+
+            out_data := MuxLookup(
+                addrLast,
+                Spec.zeroWord,
+                immutable.ArraySeq(
+                    "b00".U -> fillSInt(ramRead(31,24),24),
+                    "b01".U -> fillSInt(ramRead(23,16),24),
+                    "b10".U -> fillSInt(ramRead(15,8),24),
+                    "b11".U -> fillSInt(ramRead(7,0),24)
+                )
+            )
         }
         is (Spec.Op.AluOp.lbu) {
             ramAddr := writeAddr
             ramEnWrite := false.B
             ramEn := true.B
+
             val addrLast = writeAddr(1,0)
             ramSel := Reverse(UIntToOH(addrLast,Spec.Width.Ram.sel))
-            switch (addrLast) {
-                is ("b00".U(2.W)) {
-                    out_data := fillUInt(ramRead(31,24),24)
-                }
-                is ("b01".U(2.W)) {
-                    out_data := fillUInt(ramRead(23,16),24)
-                }
-                is ("b10".U(2.W)) {
-                    out_data := fillUInt(ramRead(15,8),24)
-                }
-                is ("b11".U(2.W)) {
-                    out_data := fillUInt(ramRead(7,0),24)
-                }
-            }
+
+            out_data := MuxLookup(
+                addrLast,
+                Spec.zeroWord,
+                immutable.ArraySeq(
+                    "b00".U -> fillUInt(ramRead(31,24),24),
+                    "b01".U -> fillUInt(ramRead(23,16),24),
+                    "b10".U -> fillUInt(ramRead(15,8),24),
+                    "b11".U -> fillUInt(ramRead(7,0),24)
+                )
+            )
         }
         is (Spec.Op.AluOp.lh) {
             ramAddr := writeAddr

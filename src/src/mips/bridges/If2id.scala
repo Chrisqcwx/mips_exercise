@@ -10,9 +10,9 @@ class If2idIOPort extends Bundle {
     val idInst = new IdInstNdPort
 }
 
-class If2id extends BridgeModule[If2idIOPort] {
+class If2id extends BridgeModule(new If2idIOPort) {
     
-    def bundleFactory = new If2idIOPort
+    // def bundleFactory = new If2idIOPort
     
     def defaultValue = (new If2idIOPort).Lit(
         _.idInst -> IdInstNdPort.defaultValue

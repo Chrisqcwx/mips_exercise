@@ -13,9 +13,9 @@ class Ex2memIOPort extends Bundle {
     val memLS = new MemLSNdPort
 }
 
-class Ex2mem extends BridgeModule[Ex2memIOPort] {
+class Ex2mem extends BridgeModule(new Ex2memIOPort) {
 
-    def bundleFactory = new Ex2memIOPort
+    // def bundleFactory = new Ex2memIOPort
 
     def defaultValue = (new Ex2memIOPort).Lit(
         _.regWrite -> RegWriteNdPort.defaultValue,

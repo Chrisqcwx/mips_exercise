@@ -6,9 +6,10 @@ import mips.Spec
 import mips.bundles._
 import mips.components._
 import mips.bridges._
+import chisel3.experimental.FlatIO
 
 class Sopc extends Module {
-    val io = IO(new Bundle {
+    val io = FlatIO(new Bundle {
         val cpuDebugPort = Output(new CpuDebugPort)
         val romDebugPort = Output(Bool())
     })

@@ -5,9 +5,10 @@ import chisel3.util._
 import chisel3.util.experimental.loadMemoryFromFileInline
 import mips.bundles.RamRWPort
 import mips.{Params, Spec}
+import chisel3.experimental.FlatIO
 
 class Ram extends Module {
-    val io = IO(new RamRWPort)
+    val io = FlatIO(new RamRWPort)
 
     val memory = RegInit(VecInit(
         Seq.fill(Params.ramMemNum)(0.U(Params.wordLength.W))

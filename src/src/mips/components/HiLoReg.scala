@@ -5,9 +5,10 @@ import chisel3.util._
 import mips.Spec
 import mips.bundles.{HiLoReadNdPort, HiLoWriteNdPort}
 import chisel3.experimental.BundleLiterals._
+import chisel3.experimental.FlatIO
 
 class HiLoReg extends Module {
-    val io = IO(new Bundle {
+    val io = FlatIO(new Bundle {
         val write = Input(new HiLoWriteNdPort)
         val output= Output(new HiLoReadNdPort)
     })

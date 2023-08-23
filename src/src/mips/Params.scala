@@ -229,4 +229,12 @@ package object mips {
             }
         }
     }
+
+    // object Func {
+    //     def Assign(dst: Set[Bits], src: Set[Bits]) {
+    //         for ((to, fr) <- dst.zip(src)) {
+    //             to := fr
+    //         }
+    //     }
+    // }
 }
